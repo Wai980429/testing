@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首爾 5 天之旅</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body { background-color: #F9F7F2; font-family: 'Helvetica Neue', sans-serif; }
+        .card { background: white; border-radius: 12px; transition: all 0.3s; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="pb-20">
+    <div id="app" class="max-w-md mx-auto p-4">
+        
+        <!-- 頂部資訊 -->
+        <header class="mb-6 mt-4">
+            <h1 class="text-2xl font-bold text-sky-700">首爾 5 天之旅</h1>
+            <p class="text-sm text-gray-500 mb-3">Wong Tsz Wai | 26/08 - 30/08</p>
+            <div class="flex gap-2">
+                <div class="flex-1 bg-white p-2 rounded-lg text-center shadow-sm border border-sky-100">
+                    <p class="text-[10px] text-gray-400">匯率 (HKD/KRW)</p>
+                    <p class="text-sm font-bold text-sky-600">1 : 170</p>
+                </div>
+                <div class="flex-1 bg-white p-2 rounded-lg text-center shadow-sm border border-sky-100">
+                    <p class="text-[10px] text-gray-400">首爾天氣</p>
+                    <p class="text-sm font-bold text-sky-600">☀️ 28°C</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主內容區 -->
+        <main>
+            <!-- 行程表 -->
+            <section v-if="currentTab === '行程表'">
+                <div class="flex overflow-x-auto scrollbar-hide gap-3 mb-6 pb-2">
+                    <button v-for="day in days" :key="day.title" @click="selectedDay = day.title"
+                        :class="['flex-shrink-0 w-24 h-20 card p-2 shadow-sm flex flex-col items-center justify-center', 
+                        selectedDay === day.title ? 'bg-sky-500 text-white' : 'bg-white text-gray-700']">
+                        <span class="text-[10px]">{{ day.sub }}</span>
+                        <span class="font-bold text-sm">{{ day.title }}</span>
+                    </button>
+                </div>
+                <div class="card p-5 shadow-sm min-h-[300px]">
+                    <h2 class="text-lg font-bold text-sky-800 mb-4">{{ selectedDay }} 行程</h2>
+                    <ul class="space-y-2 mb-4">
+                        <li v-for="(task, idx) in itinerary[selectedDay]" :key="idx" 
+                            class="flex items-center justify-between bg-gray-50 p-3 rounded-lg text-sm">
+                            <span>{{ task }}</span>
+                            <button @click="removeTask(itinerary[selectedDay], idx)" class="text-red-400 font-bold hover:text-red-600">✕</button>
+                        </li>
+                    </ul>
+                    <div class="flex gap-2 mt-4 border-t pt-4">
+                        <input v-model="newTask" @keyup.enter="addTask" placeholder="新增行程..." class="flex-1 bg-gray-100 p-2 rounded text-sm focus:outline-none">
+                        <button @click="addTask" class="bg-sky-600 text-white px-4 py-1 rounded text-sm font-bold">＋</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 購物頁面 -->
+            <section v-if="currentTab === '購物'">
+                <div class="flex gap-4 mb-6">
+                    <button @click="shoppingCategory = '紀念品'" :class="['flex-1 p-3 rounded-lg font-bold shadow-sm', shoppingCategory === '紀念品' ? 'bg-sky-500 text-white' : 'bg-white text-gray-600']">紀念品</button>
+                    <button @click="shoppingCategory = '護膚品'" :class="['flex-1 p-3 rounded-lg font-bold shadow-sm', shoppingCategory === '護膚品' ? 'bg-sky-500 text-white' : 'bg-white text-gray-600']">護膚品</button>
+                </div>
+                <div class="card p-5 shadow-sm min-h-[300px]">
+                    <h2 class="text-lg font-bold text-sky-800 mb-4">{{ shoppingCategory }} 清單</h2>
+                    <ul class="space-y-2">
+                        <li v-for="(item, idx) in shoppingList[shoppingCategory]" :key="idx" 
+                            class="flex justify-between items-center bg-gray-50 p-3 rounded-lg text-sm transition-all">
+                            <div class="flex items-center gap-3">
+                                <input type="checkbox" v-model="item.done" class="accent-sky-500 w-4 h-4 rounded">
+                                <span :class="{'line-through text-gray-400': item.done, 'text-gray-700': !item.done}">
+                                    {{ item.text }}
+                                </span>
+                            </div>
+                            <button @click="removeTask(shoppingList[shoppingCategory], idx)" class="text-red-400 hover:text-red-600">✕</button>
+                        </li>
+                    </ul>
+                    <div class="flex gap-2 mt-4 pt-4 border-t">
+                        <input v-model="newItem" @keyup.enter="addShopping" placeholder="添加新商品..." class="flex-1 bg-gray-100 p-2 rounded text-sm focus:outline-none">
+                        <button @click="addShopping" class="bg-sky-600 text-white px-4 py-1 rounded text-sm font-bold">＋</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 美食頁面 -->
+            <section v-if="currentTab === '美食'" class="space-y-4">
+                
+                <!-- 新增餐廳表單 -->
+                <div class="card p-4 shadow-sm bg-sky-50 border border-sky-100">
+                    <h3 class="text-sm font-bold text-sky-800 mb-2">＋ 新增餐廳</h3>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <select v-model="newFoodData.area" class="bg-white p-2 rounded text-sm border border-sky-200 focus:outline-none">
+                            <option value="聖水洞">聖水洞</option>
+                            <option value="明洞">明洞</option>
+                            <option value="弘大">弘大</option>
+                        </select>
+                        <select v-model="newFoodData.type" class="bg-white p-2 rounded text-sm border border-sky-200 focus:outline-none">
+                            <option value="燒肉">燒肉</option>
+                            <option value="麵包">麵包</option>
+                            <option value="甜品">甜品</option>
+                            <option value="蔘雞湯">蔘雞湯</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex gap-2">
+                            <input v-model="newFoodData.name" placeholder="餐廳名稱..." class="flex-1 bg-white p-2 rounded text-sm border border-sky-200 focus:outline-none">
+                            <select v-model="newFoodData.rating" class="w-28 bg-white p-2 rounded text-sm border border-sky-200 focus:outline-none text-yellow-500">
+                                <option :value="5">★★★★★</option>
+                                <option :value="4">★★★★☆</option>
+                                <option :value="3">★★★☆☆</option>
+                                <option :value="2">★★☆☆☆</option>
+                                <option :value="1">★☆☆☆☆</option>
+                            </select>
+                        </div>
+                        <input v-model="newFoodData.image" placeholder="貼上圖片網址 (選填)..." class="w-full bg-white p-2 rounded text-sm border border-sky-200 focus:outline-none">
+                        <div class="flex gap-2">
+                            <input v-model="newFoodData.url" placeholder="貼上 Google Maps 連結..." class="flex-1 bg-white p-2 rounded text-sm border border-sky-200 focus:outline-none">
+                            <button @click="addRestaurant" class="bg-sky-600 text-white px-4 py-1 rounded text-sm font-bold">新增</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 餐廳列表展示 -->
+                <div v-for="(restaurants, areaName) in foodList" :key="areaName" class="card p-4 shadow-sm">
+                    <h3 class="text-lg font-bold text-sky-800 mb-3 border-b pb-2">📍 {{ areaName }}</h3>
+                    
+                    <!-- 種類篩選方塊 (橫向滑動) -->
+                    <div class="flex overflow-x-auto scrollbar-hide gap-2 mb-4 pb-1">
+                        <button v-for="type in foodCategories" :key="type"
+                            @click="selectedFoodTypes[areaName] = type"
+                            :class="['flex-shrink-0 px-3 py-1.5 rounded text-xs font-bold transition shadow-sm', 
+                            selectedFoodTypes[areaName] === type ? 'bg-sky-500 text-white' : 'bg-cream text-gray-600 hover:bg-sky-100']">
+                            {{ type }}
+                        </button>
+                    </div>
+                    
+                    <p v-if="getFilteredAndSortedRestaurants(areaName).length === 0" class="text-sm text-gray-400 text-center py-4">此分類尚未加入餐廳</p>
+                    
+                    <ul class="space-y-3">
+                        <!-- 迭代已經過濾並排序的陣列 -->
+                        <li v-for="place in getFilteredAndSortedRestaurants(areaName)" :key="place.name" 
+                            class="bg-cream p-3 rounded-lg flex gap-3 transition">
+                            
+                            <img v-if="place.image" :src="place.image" class="w-16 h-16 object-cover rounded shadow-sm border border-sky-100" alt="餐廳圖片">
+                            
+                            <div class="flex-1 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex justify-between items-start">
+                                        <span class="text-sm font-bold text-gray-700">{{ place.name }}</span>
+                                        <button @click="removeRestaurant(areaName, place)" class="text-gray-400 hover:text-red-500 text-xs ml-2">✕</button>
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-[10px] text-yellow-500 tracking-widest">
+                                            {{ '★'.repeat(place.rating) }}{{ '☆'.repeat(5 - place.rating) }}
+                                        </span>
+                                        <span class="text-[10px] bg-sky-200 text-sky-800 px-2 py-0.5 rounded-full">{{ place.type }}</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2" v-if="place.url">
+                                    <a :href="place.url" target="_blank" 
+                                       class="inline-block text-sky-500 font-bold hover:text-sky-700 bg-white px-2 py-1 rounded shadow-sm text-[10px] border border-sky-100">
+                                        🗺️ 開啟地圖
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部導航 -->
+        <nav class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 flex justify-around p-3 z-50">
+            <button v-for="tab in ['行程表', '地圖', '記帳', '購物', '美食']" :key="tab"
+                @click="currentTab = tab" 
+                :class="['text-xs font-bold', currentTab === tab ? 'text-sky-600' : 'text-gray-400']">
+                {{ tab }}
+            </button>
+        </nav>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        createApp({
+            data() {
+                return {
+                    currentTab: '美食', 
+                    selectedDay: 'Day 1',
+                    newTask: '',
+                    newItem: '',
+                    shoppingCategory: '紀念品',
+                    days: [
+                        { title: 'Day 1', sub: '26/08' }, { title: 'Day 2', sub: '27/08' },
+                        { title: 'Day 3', sub: '28/08' }, { title: 'Day 4', sub: '29/08' },
+                        { title: 'Day 5', sub: '30/08' }
+                    ],
+                    itinerary: { 
+                        'Day 1': ['搭乘 CX410', '入住'], 'Day 2': [], 'Day 3': [], 'Day 4': [], 'Day 5': ['搭乘 CX439'] 
+                    },
+                    shoppingList: { 
+                        '紀念品': [{ text: '韓國海苔', done: false }, { text: '傳統書籤', done: true }], 
+                        '護膚品': [] 
+                    },
+                    // 新增餐廳的表單綁定資料
+                    newFoodData: { area: '聖水洞', type: '燒肉', name: '', url: '', image: '', rating: 5 },
+                    // 美食種類清單
+                    foodCategories: ['全部', '燒肉', '麵包', '甜品', '蔘雞湯', '其他'],
+                    // 每個地區目前選擇的過濾種類
+                    selectedFoodTypes: { '聖水洞': '全部', '明洞': '全部', '弘大': '全部' },
+                    // 按地區分類的餐廳口袋名單
+                    foodList: {
+                        '聖水洞': [
+                            { name: '祖傳三代蔘雞湯', type: '蔘雞湯', rating: 3, image: 'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=200&auto=format&fit=crop', url: 'https://maps.app.goo.gl/' },
+                            { name: '傳聞中的聖水馬鈴薯排骨湯', type: '其他', rating: 5, image: 'https://images.unsplash.com/photo-1580651315530-69c8e0026377?q=80&w=200&auto=format&fit=crop', url: 'https://maps.app.goo.gl/' }, 
+                            { name: 'Cafe Onion', type: '麵包', rating: 4, image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=200&auto=format&fit=crop', url: 'https://maps.app.goo.gl/' }
+                        ],
+                        '明洞': [
+                            { name: '王妃家', type: '燒肉', rating: 5, image: '', url: 'https://maps.app.goo.gl/' }
+                        ],
+                        '弘大': []
+                    }
+                }
+            },
+            methods: {
+                addTask() { 
+                    if(this.newTask.trim()) { this.itinerary[this.selectedDay].push(this.newTask); this.newTask = ''; } 
+                },
+                addShopping() { 
+                    if(this.newItem.trim()) { this.shoppingList[this.shoppingCategory].push({ text: this.newItem, done: false }); this.newItem = ''; } 
+                },
+                removeTask(list, index) { 
+                    list.splice(index, 1); 
+                },
+                addRestaurant() {
+                    if(this.newFoodData.name.trim()) {
+                        this.foodList[this.newFoodData.area].push({
+                            name: this.newFoodData.name,
+                            type: this.newFoodData.type,
+                            url: this.newFoodData.url,
+                            image: this.newFoodData.image,
+                            rating: this.newFoodData.rating
+                        });
+                        this.newFoodData.name = '';
+                        this.newFoodData.url = '';
+                        this.newFoodData.image = '';
+                        this.newFoodData.rating = 5;
+                    }
+                },
+                // 特製的刪除餐廳方法 (因為清單經過排序，需回到原陣列找 index 刪除)
+                removeRestaurant(area, place) {
+                    const originalIndex = this.foodList[area].findIndex(item => item === place);
+                    if (originalIndex !== -1) {
+                        this.foodList[area].splice(originalIndex, 1);
+                    }
+                },
+                // 取得過濾並依評分排序的餐廳
+                getFilteredAndSortedRestaurants(areaName) {
+                    let list = this.foodList[areaName] || [];
+                    const selectedType = this.selectedFoodTypes[areaName];
+                    
+                    // 1. 種類過濾
+                    if (selectedType !== '全部') {
+                        list = list.filter(item => item.type === selectedType);
+                    }
+                    
+                    // 2. 評分排序 (高到低)。使用 [...list] 避免更動原始資料
+                    return [...list].sort((a, b) => b.rating - a.rating);
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
