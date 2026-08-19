@@ -21,16 +21,13 @@
     <!-- SortableJS for Drag & Drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
-    <!-- PWA Manifest Injection -->
-    <link rel="manifest" id="pwa-manifest">
-    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         window.FirebaseSDK = {
-            initializeApp, signInAnonymously, signInWithCustomToken,
+            initializeApp, signInAnonymously,
             getAuth, getFirestore, doc, setDoc, onSnapshot
         };
     </script>
@@ -538,8 +535,6 @@
     </div>
 
     <script>
-        // ... existing manifest code ...
-
         const { createApp } = Vue;
 
         const app = createApp({
@@ -607,82 +602,16 @@
                     selectedFoodArea: '聖水洞', 
                     foodList: {
                         '弘大': [
-                            { id: 'hd1', name: '1.5floor coffee', type: '甜品', url: 'https://www.google.com/maps/place/1.5floor+coffee/data=!4m2!3m1!1s0x357c98e911840279:0x4447e4da1b23947c', rating: 5 },
-                            { id: 'hd2', name: 'Mandong Bakery', type: '麵包', url: 'https://www.google.com/maps/place/Mandong+Bakery/data=!4m2!3m1!1s0x357c98ebfdf9546b:0x9b60b046672f3a4a', rating: 5 },
-                            { id: 'hd3', name: 'Bagel Land', type: '麵包', url: 'https://www.google.com/maps/place/Bagel+Land/data=!4m2!3m1!1s0x357c990de784bdb9:0x767d1e503e2b5630', rating: 5 },
-                            { id: 'hd4', name: '연어롭다', type: '韓餐', url: 'https://www.google.com/maps/place/%EC%97%B0%EC%96%B4%EB%A1%AD%EB%8B%A4/data=!4m2!3m1!1s0x357c98e914423fd3:0x1acec805ac2c7892', rating: 5 },
-                            { id: 'hd5', name: 'Kyeong Yang Katsu', type: '韓餐', url: 'https://www.google.com/maps/place/Kyeong+Yang+Katsu/data=!4m2!3m1!1s0x357c995ac7e8847b:0x939c0c7a5de82fad', rating: 5 },
-                            { id: 'hd6', name: 'Camello Yeonnam', type: '韓餐', url: 'https://www.google.com/maps/place/Camello+Yeonnam/data=!4m2!3m1!1s0x357c99e57b0d053b:0xf3e40fe627414b1e', rating: 5 },
-                            { id: 'hd7', name: 'Ugly Bakery', type: '麵包', url: 'https://www.google.com/maps/place/Ugly+Bakery/data=!4m2!3m1!1s0x357c9925aef9f56f:0x2104ffb47ee6fa7e', rating: 5 },
-                            { id: 'hd8', name: 'Malic coffee', type: '甜品', url: 'https://www.google.com/maps/place/Malic+coffee/data=!4m2!3m1!1s0x357c98c24b181a71:0xc7e898869cf4117b', rating: 5 },
-                            { id: 'hd9', name: '新村奶油燉排骨', type: '韓餐', url: 'https://www.google.com/maps/place/%E6%96%B0%E6%9D%91%E5%A5%B6%E6%B2%B9%E7%87%89%E6%8E%92%E9%AA%A8/data=!4m2!3m1!1s0x357c989459a703ef:0xcf6b740f1ea9aa98', rating: 5 },
-                            { id: 'hd10', name: 'oats coffee', type: '甜品', url: 'https://www.google.com/maps/place/oats+coffee/data=!4m2!3m1!1s0x357c98ce32d3e313:0x9323f89dbb357ef8', rating: 5 },
-                            { id: 'hd11', name: 'Seonbi Dining', type: '韓餐', url: 'https://www.google.com/maps/place/Seonbi+Dining/data=!4m2!3m1!1s0x357c99001273e711:0xdfbf42ae21d85b3d', rating: 5 },
-                            { id: 'hd12', name: 'Hotel De GGOODD', type: '甜品', url: 'https://www.google.com/maps/place/Hotel+De+GGOODD/data=!4m2!3m1!1s0x357c99f765fd5475:0x90d3afe09772bbb6', rating: 5 },
-                            { id: 'hd13', name: '로이로이', type: '甜品', url: 'https://www.google.com/maps/place/%EB%A1%9C%EC%9D%B4%EB%A1%9C%EC%9D%B4/data=!4m2!3m1!1s0x357c99eaf36c9123:0x48d19b8eae1651bf', rating: 5 },
-                            { id: 'hd14', name: '오레노라멘 본점', type: '麵食', url: 'https://www.google.com/maps/place/%EC%98%A4%EB%A0%88%EB%85%B8%EB%9D%BC%EB%A9%98+%EB%B3%B8%EC%A0%90/data=!4m2!3m1!1s0x357c98d15ae684a9:0x876683a301bb2aaf', rating: 5 },
-                            { id: 'hd15', name: 'MintChoco World', type: '甜品', url: 'https://www.google.com/maps/place/MintChoco+World/data=!4m2!3m1!1s0x357c9909a6fdd8f1:0x9de625296cabc794', rating: 5 },
-                            { id: 'hd16', name: '리차드하우스 연남', type: '韓餐', url: 'https://www.google.com/maps/place/%EB%A6%AC%EC%B0%A8%EB%93%9C%ED%95%98%EC%9A%B0%EC%8A%A4+%EC%97%B0%EB%82%A8/data=!4m2!3m1!1s0x357c99f66db83751:0xd70d5ad6f8203055', rating: 5 },
-                            { id: 'hd17', name: 'Mibbedong', type: '韓餐', url: 'https://www.google.com/maps/place/Mibbedong/data=!4m2!3m1!1s0x357c99b77808227f:0x17d8900d8eac34bb', rating: 5 },
-                            { id: 'hd18', name: 'JO & DAWSON', type: '甜品', url: 'https://www.google.com/maps/place/JO+%26+DAWSON/data=!4m2!3m1!1s0x357c99d9fba2518b:0xb76011a0c279256c', rating: 5 },
-                            { id: 'hd19', name: 'Mashitaya', type: '麵食', url: 'https://www.google.com/maps/place/Mashitaya/data=!4m2!3m1!1s0x357c98c3d1e57167:0xbf65ed60ed2753d6', rating: 5 },
-                            { id: 'hd20', name: '돈수백 홍대직영점', type: '韓餐', url: 'https://www.google.com/maps/place/%EB%8F%88%EC%88%98%EB%B0%B1+%ED%99%8D%EB%8C%80%EC%A7%81%EC%98%81%EC%A0%90/data=!4m2!3m1!1s0x357c98c2f862a977:0x781c5e6aef6534c5', rating: 5 },
-                            { id: 'hd21', name: 'SWEATHER Yeonnam Bakery Café', type: '麵包', url: 'https://www.google.com/maps/place/SWEATHER+Yeonnam+Bakery+Caf%C3%A9/data=!4m2!3m1!1s0x357c993f55a30425:0x554b1f7829a31119', rating: 5 },
-                            { id: 'hd22', name: 'Hippo Cafeteria', type: '甜品', url: 'https://www.google.com/maps/place/Hippo+Cafeteria/data=!4m2!3m1!1s0x357c99801c781063:0x5d3bc64479ec9c7c', rating: 5 },
-                            { id: 'hd23', name: '屋同食 西橋店', type: '韓餐', url: 'https://www.google.com/maps/place/%E5%B1%8B%E5%90%8C%E9%A3%9F+%E8%A5%BF%E6%A9%8B%E5%BA%97/data=!4m2!3m1!1s0x357cbcbf13b198c9:0x97157533c386824', rating: 5 },
-                            { id: 'hd24', name: 'Parole & Langue', type: '甜品', url: 'https://www.google.com/maps/place/Parole+%26+Langue/data=!4m2!3m1!1s0x357c9fac90e3e9b5:0x8c467a63eb0d86e4', rating: 5 },
-                            { id: 'hd25', name: 'The Grazing Pig', type: '燒肉', url: 'https://www.google.com/maps/place/The+Grazing+Pig/data=!4m2!3m1!1s0x357c99b9a139a397:0x5496a15775803021', rating: 5 },
-                            { id: 'hd26', name: 'Before Blooming 비포블루밍', type: '甜品', url: 'https://www.google.com/maps/place/Before+Blooming+%EB%B9%84%ED%8F%AC%EB%B8%94%EB%A3%A8%EB%B0%8D/data=!4m2!3m1!1s0x357c99ff4b52a32f:0x3cdc3c1b7265d719', rating: 5 }
+                            { id: 'hd1', name: '1.5floor coffee', type: '甜品', url: '', rating: 5 },
+                            { id: 'hd2', name: 'Mandong Bakery', type: '麵包', url: '', rating: 5 }
                         ],
                         '明洞': [
-                            { id: 'md1', name: '陳玉華奶奶元祖一隻雞', type: '蔘雞湯', url: 'https://www.google.com/maps/place/%E9%99%B3%E7%8E%89%E8%8F%AF%E5%A5%B6%E5%A5%B6%E5%85%83%E7%A5%96%E4%B8%80%E9%9A%BB%E9%9B%9E/data=!4m2!3m1!1s0x357ca32482e332fd:0x9a7cef4e2f65cb9d', rating: 5 },
-                            { id: 'md2', name: 'Bubing', type: '甜品', url: 'https://www.google.com/maps/place/Bubing/data=!4m2!3m1!1s0x357ca2b1dc8d124f:0xa8e2a7b176610684', rating: 5 },
-                            { id: 'md3', name: 'Ppasam', type: '韓餐', url: 'https://www.google.com/maps/place/Ppasam/data=!4m2!3m1!1s0x357ca3e224e8b537:0x9ef32ea98fcfc00e', rating: 5 },
-                            { id: 'md4', name: '安東家手工刀切麵', type: '麵食', url: 'https://www.google.com/maps/place/%E5%AE%89%E6%9D%B1%E5%AE%B6%E6%89%8B%E5%B7%A5%E5%88%80%E5%88%87%E9%BA%B5/data=!4m2!3m1!1s0x357cbca83b69f8a1:0xf3dd80558526428', rating: 5 },
-                            { id: 'md5', name: '明洞餃子 本店', type: '麵食', url: 'https://www.google.com/maps/place/%E6%98%8E%E6%B4%9E%E9%A4%83%E5%AD%90+%E6%9C%AC%E5%BA%97/data=!4m2!3m1!1s0x357ca2f00d41b15b:0x7d50d5b6b0623a1d', rating: 5 },
-                            { id: 'md6', name: '瑞源粥', type: '韓餐', url: 'https://www.google.com/maps/place/%E7%91%9E%E6%BA%90%E7%B2%A5/data=!4m2!3m1!1s0x357ca2fa9262d52b:0x60a462c97752f6c', rating: 5 },
-                            { id: 'md7', name: 'GONGGANGAB', type: '其他', url: 'https://www.google.com/maps/place/GONGGANGAB/data=!4m2!3m1!1s0x357ca2e43f8b7f91:0xcc9f85c751b6f223', rating: 5 },
-                            { id: 'md8', name: '朝朝刀削麵', type: '麵食', url: 'https://www.google.com/maps/place/%E6%9C%9D%E6%9C%9D%E5%88%80%E5%89%8A%E9%BA%B5/data=!4m2!3m1!1s0x357ca3b8fe39135d:0x73dd4c1f7c2430c8', rating: 5 },
-                            { id: 'md9', name: 'Cafe Archivist', type: '甜品', url: 'https://www.google.com/maps/place/Cafe+Archivist/data=!4m2!3m1!1s0x357ca3bbcf47ede1:0x46967db5fc9f0ec2', rating: 5 },
-                            { id: 'md10', name: 'Garlic Boy', type: '其他', url: 'https://www.google.com/maps/place/Garlic+Boy/data=!4m2!3m1!1s0x357ca3005e5e5b37:0x2a4d4ba839c346e5', rating: 5 },
-                            { id: 'md11', name: '土俗村 蔘鷄湯', type: '蔘雞湯', url: 'https://www.google.com/maps/place/%E5%9C%9F%E4%BF%97%E6%9D%91+%E8%94%98%E9%B7%84%E6%B9%AF/data=!4m2!3m1!1s0x357ca2be188e936f:0xe0687c7b0f486f53', rating: 5 },
-                            { id: 'md12', name: 'Wooyookmi', type: '燒肉', url: 'https://www.google.com/maps/place/Wooyookmi/data=!4m2!3m1!1s0x357ca34a333cb723:0x5636f1d7d12b4725', rating: 5 },
-                            { id: 'md13', name: '희죽희죽', type: '其他', url: 'https://www.google.com/maps/place/%ED%9D%AC%EC%A3%BD%ED%9D%AC%EC%A3%BD/data=!4m2!3m1!1s0x357ca2fac19ccb71:0xba0f54ba4da75fac', rating: 5 },
-                            { id: 'md14', name: '紫霞手工水餃', type: '麵食', url: 'https://www.google.com/maps/place/%E7%B4%AB%E9%9C%9E%E6%89%8B%E5%B7%A5%E6%B0%B4%E9%A4%83/data=!4m2!3m1!1s0x357ca2b1ecf6520b:0xd7ecb06428cd993', rating: 5 },
-                            { id: 'md15', name: '順姬家綠豆煎餅', type: '韓餐', url: 'https://www.google.com/maps/place/%E9%A0%86%E5%A7%AC%E5%AE%B6%E7%B6%A0%E8%B1%86%E7%85%8E%E9%A4%85/data=!4m2!3m1!1s0x357ca32116b15d47:0x48dcc90eea572b60', rating: 5 },
-                            { id: 'md16', name: 'Artist Bakery', type: '麵包', url: 'https://www.google.com/maps/place/Artist+Bakery/data=!4m2!3m1!1s0x357ca3af16e959a7:0x96157e8b659e7eb6', rating: 5 },
-                            { id: 'md17', name: '安岩', type: '韓餐', url: 'https://www.google.com/maps/place/%E5%AE%89%E5%B2%A9/data=!4m2!3m1!1s0x357ca3301158e705:0x2ecb7e16a67aa259', rating: 5 },
-                            { id: 'md18', name: '孔陵一隻雞', type: '蔘雞湯', url: 'https://www.google.com/maps/place/%E5%AD%94%E9%99%B5%E4%B8%80%E9%9A%BB%E9%9B%9E/data=!4m2!3m1!1s0x357ca32483ce340d:0xc97fd4faa6e98dda', rating: 5 },
-                            { id: 'md19', name: 'Dokdo 16 celcius', type: '甜品', url: 'https://www.google.com/maps/place/Dokdo+16+celcius/data=!4m2!3m1!1s0x357ca35f4750d96d:0xdf74f6577b1bf393', rating: 5 },
-                            { id: 'md20', name: '高峰蔘雞湯', type: '蔘雞湯', url: 'https://www.google.com/maps/place/%E9%AB%98%E5%B3%B0%E8%94%98%E9%9B%9E%E6%B9%AF/data=!4m2!3m1!1s0x357ca2ee55555555:0xdb498f09569c6449', rating: 5 },
-                            { id: 'md21', name: '光化門湯飯', type: '韓餐', url: 'https://www.google.com/maps/place/%E5%85%89%E5%8C%96%E9%96%80%E6%B9%AF%E9%A3%AF/data=!4m2!3m1!1s0x357ca292cda580f1:0x695ce3aeab0bb43f', rating: 5 },
-                            { id: 'md22', name: 'Myeongdong Korean BBQ Mongvely', type: '燒肉', url: 'https://www.google.com/maps/place/Myeongdong+Korean+BBQ+Mongvely/data=!4m2!3m1!1s0x357ca35b9e36cb81:0xc115ba7856b7ef65', rating: 5 },
-                            { id: 'md23', name: 'Dalmaji Plaza BBQ', type: '燒肉', url: 'https://www.google.com/maps/place/Dalmaji+Plaza+BBQ/data=!4m2!3m1!1s0x357ca300453812db:0xc6c556f8b41a9d89', rating: 5 }
+                            { id: 'md1', name: '陳玉華奶奶元祖一隻雞', type: '蔘雞湯', url: '', rating: 5 },
+                            { id: 'md2', name: 'Bubing', type: '甜品', url: '', rating: 5 }
                         ],
                         '聖水洞': [
-                            { id: 'sd1', name: '星巴克 首爾波浪藝術中心店', type: '甜品', url: 'https://www.google.com/maps/place/%E6%98%9F%E5%B7%B4%E5%85%8B+%E9%A6%96%E7%88%BE%E6%B3%A2%E6%B5%AA%E8%97%9D%E8%A1%93%E4%B8%AD%E5%BF%83%E5%BA%97/data=!4m2!3m1!1s0x357ca363d9f93193:0x8ee243bafc58855f', rating: 5 },
-                            { id: 'sd2', name: 'Butty Sandwich House', type: '麵包', url: 'https://www.google.com/maps/place/Butty+Sandwich+House/data=!4m2!3m1!1s0x357ca514a1c111f1:0xb22f2464eff87524', rating: 5 },
-                            { id: 'sd3', name: 'Oatt Brunch', type: '其他', url: 'https://www.google.com/maps/place/Oatt+Brunch/data=!4m2!3m1!1s0x357ca5006f2bc31b:0x1d454acd490f3cf4', rating: 5 },
-                            { id: 'sd4', name: 'Rafre Fruit', type: '甜品', url: 'https://www.google.com/maps/place/Rafre+Fruit/data=!4m2!3m1!1s0x357ca3d34bd6e9cf:0x7ce75909054a69c', rating: 5 },
-                            { id: 'sd5', name: 'Haz Bakery', type: '麵包', url: 'https://www.google.com/maps/place/Haz+Bakery/data=!4m2!3m1!1s0x357ca5000ccbd921:0xb857d4a709fb6411', rating: 5 },
-                            { id: 'sd6', name: 'etre bakehouse', type: '麵包', url: 'https://www.google.com/maps/place/etre+bakehouse/data=!4m2!3m1!1s0x357ca5005051193f:0xd7e0878217e61e4c', rating: 5 },
-                            { id: 'sd7', name: 'Meitawang Egg Tart', type: '甜品', url: 'https://www.google.com/maps/place/Meitawang+Egg+Tart/data=!4m2!3m1!1s0x357ca5ca12a995b5:0x4d9a46b4b573694a', rating: 5 },
-                            { id: 'sd8', name: 'Maman Gelato Seongsu', type: '甜品', url: 'https://www.google.com/maps/place/Maman+Gelato+Seongsu/data=!4m2!3m1!1s0x357ca500039e5091:0x6c557e0ce59b198d', rating: 5 },
-                            { id: 'sd9', name: '安木豬肉湯飯', type: '韓餐', url: 'https://www.google.com/maps/place/%E5%AE%89%E6%9C%A8%E8%B1%AC%E8%82%89%E6%B9%AF%E9%A3%AF/data=!4m2!3m1!1s0x357ca54ec367edbf:0x348537f8ead0b9eb', rating: 5 },
-                            { id: 'sd10', name: '無垢屋 聖水店', type: '韓餐', url: 'https://www.google.com/maps/place/%E7%84%A1%E5%9E%A2%E5%B1%8B+%E8%81%96%E6%B0%B4%E5%BA%97/data=!4m2!3m1!1s0x357ca5df1ce46d09:0xe9d21fa0c6a0ba66', rating: 5 },
-                            { id: 'sd11', name: '祖傳三代馬鈴薯排骨湯', type: '韓餐', url: 'https://www.google.com/maps/place/%E7%A5%96%E5%82%B3%E4%B8%89%E4%BB%A3%E9%A6%AC%E9%88%B4%E8%96%AF%E6%8E%92%E9%AA%A8%E6%B9%AF/data=!4m2!3m1!1s0x357ca4913140fbb5:0x7897953e193bd3f9', rating: 5 },
-                            { id: 'sd12', name: 'ETF베이커리 성수', type: '麵包', url: 'https://www.google.com/maps/place/ETF%EB%B2%A0%EC%9D%B4%EC%BB%A4%EB%A6%AC+%EC%84%B1%EC%88%98/data=!4m2!3m1!1s0x357ca50007f812a1:0x567f9181f6dbf7ea', rating: 5 },
-                            { id: 'sd13', name: 'BriBeet', type: '其他', url: 'https://www.google.com/maps/place/BriBeet/data=!4m2!3m1!1s0x357ca58c68be650f:0xfda1c4065eb07d09', rating: 5 },
-                            { id: 'sd14', name: 'Perment Bakeshop Seoul Forest', type: '麵包', url: 'https://www.google.com/maps/place/Perment+Bakeshop+Seoul+Forest/data=!4m2!3m1!1s0x357ca5b451894f01:0x40186fa01ca21130', rating: 5 },
-                            { id: 'sd15', name: 'Beton', type: '麵包', url: 'https://www.google.com/maps/place/Beton/data=!4m2!3m1!1s0x357ca50074bc8f45:0xa055ef85c58f7354', rating: 5 },
-                            { id: 'sd16', name: 'Standard Bread', type: '麵包', url: 'https://www.google.com/maps/place/Standard+Bread/data=!4m2!3m1!1s0x357ca5001a1e9b7f:0x5fc94f435075f74d', rating: 5 },
-                            { id: 'sd17', name: '自然島鹽可頌', type: '麵包', url: 'https://www.google.com/maps/place/%E8%87%AA%E7%84%B6%E5%B3%B6%E9%B9%BD%E5%8F%AF%E9%A0%8C/data=!4m2!3m1!1s0x357ca58daad46ea9:0x4922f006043fcb1e', rating: 5 },
-                            { id: 'sd18', name: '韓貞仙', type: '甜品', url: 'https://www.google.com/maps/place/%E9%9F%93%E8%B2%9E%E4%BB%99/data=!4m2!3m1!1s0x357ca500659ea3e3:0x63f2feeed9344627', rating: 5 },
-                            { id: 'sd19', name: '카페오라', type: '甜品', url: 'https://www.google.com/maps/place/%EC%B9%B4%ED%8E%98%EC%98%A4%EB%9D%BC/data=!4m2!3m1!1s0x357ca49f2a1a97c5:0x1c6f0ac282b9065', rating: 5 },
-                            { id: 'sd20', name: 'Central Reducer', type: '其他', url: 'https://www.google.com/maps/place/Central+Reducer/data=!4m2!3m1!1s0x357ca5267692683d:0x59b981c20aad69a4', rating: 5 },
-                            { id: 'sd21', name: '은빛물결황금낙지', type: '韓餐', url: 'https://www.google.com/maps/place/%EC%9D%80%EB%B9%9B%EB%AC%BC%EA%B2%B0%ED%99%A9%EA%B8%88%EB%82%99%EC%A7%80/data=!4m2!3m1!1s0x357ca48e1959b997:0x50e2ba6c2f5459f0', rating: 5 },
-                            { id: 'sd22', name: 'Spring Garden Seongsu', type: '其他', url: 'https://www.google.com/maps/place/Spring+Garden+Seongsu/data=!4m2!3m1!1s0x357ca5a054e6ed19:0xf79e975cc2e5f20f', rating: 5 },
-                            { id: 'sd23', name: 'Neungdong Minari Seongsu', type: '韓餐', url: 'https://www.google.com/maps/place/Neungdong+Minari+Seongsu/data=!4m2!3m1!1s0x357ca5000474fbc5:0x6505020fd9df7729', rating: 5 }
+                            { id: 'sd1', name: '星巴克 首爾波浪藝術中心店', type: '甜品', url: '', rating: 5 },
+                            { id: 'sd2', name: 'Butty Sandwich House', type: '麵包', url: '', rating: 5 }
                         ]
                     },
                     
@@ -778,15 +707,28 @@
                         return;
                     }
 
-                    const { initializeApp, getAuth, signInWithCustomToken, signInAnonymously, getFirestore, doc, setDoc, onSnapshot } = window.FirebaseSDK;
+                    const { initializeApp, getAuth, signInAnonymously, getFirestore, doc, setDoc, onSnapshot } = window.FirebaseSDK;
 
                     try {
-                        const appId = typeof __app_id !== 'undefined' ? __app_id : 'apple-travel-app';
-                        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-                        const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                        // ==========================================
+                        // 🔴 步驟一：請在這裡填寫你的 Firebase Config 🔴
+                        // ==========================================
+                        const firebaseConfig = {
+                            apiKey: "AIzaSyC4ByY5EGPXsakZ5V_p7WbsWnLFhmDMxrg",
+                            authDomain: "seoul-0429.firebaseapp.com",
+                            projectId: "seoul-0429",
+                            storageBucket: "seoul-0429.firebasestorage.app",
+                            messagingSenderId: "1026797927148",
+                            appId: "1:1026797927148:web:bf5cb7db4fac690da1c3c9",
+                            measurementId: "G-3ZQ0SST761"
+                        };
+                        
+                        // 定義你的專案名稱（作為資料庫的根路徑）
+                        const appId = 'my-travel-planner';
 
-                        if (!firebaseConfig) {
-                            console.warn('No Firebase config available, fallback to offline.');
+                        // 判斷是否為預設字串，避免沒改到就執行噴錯
+                        if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+                            console.warn('請先到程式碼中填寫 Firebase Config 才能使用雲端同步功能。');
                             this.syncStatus = 'offline';
                             return;
                         }
@@ -795,20 +737,9 @@
                         const auth = getAuth(fbApp);
                         const db = getFirestore(fbApp);
 
-                        // 進行身份認證
-                        let user = null;
-                        if (initialToken) {
-                            try {
-                                const cred = await signInWithCustomToken(auth, initialToken);
-                                user = cred.user;
-                            } catch (e) {
-                                const cred = await signInAnonymously(auth);
-                                user = cred.user;
-                            }
-                        } else {
-                            const cred = await signInAnonymously(auth);
-                            user = cred.user;
-                        }
+                        // 進行身份認證 (匿名登入)
+                        const cred = await signInAnonymously(auth);
+                        const user = cred.user;
 
                         if (!user) {
                             this.syncStatus = 'offline';
