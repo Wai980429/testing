@@ -6,11 +6,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#F2F2F7">
-    <title>旅程規劃 - Google Maps 美食解析版</title>
+    <title>我想行開下忘記咗呢個世界</title>
     
     <!-- iOS 主畫面 ICON 與 Favicon 設定 -->
-    <link rel="apple-touch-icon" sizes="180x180" href="https://meee.com.tw/yhbbGbE">
-    <link rel="icon" type="image/png" href="https://meee.com.tw/yhbbGbE">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://i.meee.com.tw/GyvTCAU.png">
+    <link rel="icon" type="image/png" href="https://i.meee.com.tw/GyvTCAU.png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -111,7 +111,7 @@
         <header class="sticky top-0 z-40 glass-header px-5 pb-4 pt-12 mb-2">
             <div class="flex justify-between items-end h-10">
                 <div class="flex items-center gap-2.5">
-                    <img src="https://meee.com.tw/yhbbGbE" alt="App Icon" class="w-8 h-8 rounded-xl object-cover shadow-sm border border-black/5" onerror="this.style.display='none'">
+                    <img src="https://i.meee.com.tw/GyvTCAU.png" alt="App Icon" class="w-8 h-8 rounded-xl object-cover shadow-sm border border-black/5" onerror="this.style.display='none'">
                     <h1 class="text-3xl font-bold tracking-tight text-gray-900">{{ currentTab }}</h1>
                 </div>
                 <div class="flex items-center gap-2">
@@ -475,8 +475,6 @@
                                     <option value="聖水洞"></option>
                                     <option value="明洞"></option>
                                     <option value="弘大"></option>
-                                    <option value="延南洞"></option>
-                                    <option value="安國/三清洞"></option>
                                 </datalist>
                                 <select v-model="newRestaurant.type" class="w-1/2 bg-white px-4 py-3.5 text-[16px] focus:outline-none focus:bg-blue-50/30 text-gray-900 font-medium appearance-none">
                                     <option value="燒肉">燒肉</option>
@@ -484,8 +482,7 @@
                                     <option value="甜品">甜品</option>
                                     <option value="蔘雞湯">蔘雞湯</option>
                                     <option value="韓餐">韓餐</option>
-                                    <option value="麵食">麵食</option>
-                                    <option value="居酒屋">居酒屋</option>
+                                    <option value="西餐">西餐</option>
                                     <option value="其他">其他</option>
                                 </select>
                             </div>
