@@ -35,7 +35,7 @@
     <style>
         /* Apple SF Pro 系統字體與基礎設定 */
         body { 
-            background-color: #F2F2F7; /* iOS 分組背景色 */
+            background-color: #F2F2F7; 
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; 
             -webkit-font-smoothing: antialiased;
             -webkit-tap-highlight-color: transparent;
@@ -148,7 +148,6 @@
 
         <!-- 主內容區 -->
         <main class="px-5">
-            <!-- ＝＝＝＝＝ 行程表 ＝＝＝＝＝ -->
             <section v-show="currentTab === '行程表'">
                 <!-- 天數選擇 (Pill 樣式) -->
                 <div class="flex overflow-x-auto scrollbar-hide gap-2 mb-6 pb-1">
@@ -193,7 +192,6 @@
                 </div>
             </section>
 
-            <!-- ＝＝＝＝＝ 資訊 ＝＝＝＝＝ -->
             <section v-show="currentTab === '資訊'" class="space-y-6">
                 <!-- 事前準備 (帶環形進度) -->
                 <div class="ios-card p-5">
@@ -275,7 +273,6 @@
                 </div>
             </section>
 
-            <!-- ＝＝＝＝＝ 購物 ＝＝＝＝＝ -->
             <section v-show="currentTab === '購物'" class="space-y-4">
                 <div class="ios-card p-5">
                     <div class="flex justify-between items-center mb-5">
@@ -283,28 +280,34 @@
                         <progress-ring :percentage="shoppingProgress" :size="38" :stroke="3.5" color="stroke-indigo-500"></progress-ring>
                     </div>
                     
-                    <div ref="shoppingListRef" class="space-y-2 min-h-[150px]">
-                        <p v-if="shoppingList.length === 0" class="text-center text-sm text-gray-400 py-6">尚無項目</p>
+                    <div ref="shoppingListRef" class="grid grid-cols-2 gap-3 min-h-[150px]">
+                        <p v-if="shoppingList.length === 0" class="col-span-2 text-center text-sm text-gray-400 py-6">尚無項目</p>
                         
-                        <swipe-item v-for="(item, idx) in shoppingList" :key="item.id" @delete="removeTask(shoppingList, idx)" class="bg-white rounded-lg border border-gray-50 shadow-sm">
-                            <div class="flex flex-col py-3 px-2">
-                                <!-- 文字與核取方塊 -->
-                                <div class="flex items-center gap-3">
-                                    <input type="checkbox" v-model="item.done">
-                                    <span :class="{'text-gray-400 line-through': item.done, 'text-gray-800': !item.done}" class="flex-1 text-[15px] transition-colors font-medium">
-                                        {{ item.text }}
-                                    </span>
-                                    <div class="drag-handle p-1 text-gray-300">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
-                                    </div>
-                                </div>
-                                <!-- 縮圖顯示區塊 -->
-                                <div v-if="item.image" class="mt-3 ml-8 relative w-24">
-                                    <img :src="item.image" @click="openImage(item.image)" class="w-24 h-24 object-cover rounded-xl border border-gray-200 cursor-zoom-in shadow-sm active:scale-95 transition-transform">
-                                    <button @click="item.image = null" class="absolute -top-2 -right-2 bg-gray-800/80 backdrop-blur text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] shadow-md z-10 active:bg-gray-900">✕</button>
-                                </div>
+                        <div v-for="(item, idx) in shoppingList" :key="item.id" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden flex flex-col relative group">
+                            <!-- 刪除整個項目的按鈕 (取代原本的滑動刪除) -->
+                            <button @click="removeTask(shoppingList, idx)" class="absolute top-2 right-2 bg-black/40 text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] shadow-sm z-10 backdrop-blur-md active:bg-black/60 transition-colors">
+                                ✕
+                            </button>
+                            
+                            <!-- 拖曳把手 -->
+                            <div class="drag-handle absolute top-2 left-2 bg-black/40 text-white rounded-md p-1 shadow-sm z-10 backdrop-blur-md cursor-grab flex items-center justify-center active:bg-black/60 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 8h16M4 16h16"></path></svg>
                             </div>
-                        </swipe-item>
+
+                            <!-- 圖片主導區塊 (沒有圖片時顯示佔位圖示) -->
+                            <div class="aspect-square w-full bg-gray-50 flex items-center justify-center cursor-pointer relative" @click="item.image ? openImage(item.image) : null">
+                                <img v-if="item.image" :src="item.image" class="w-full h-full object-cover active:opacity-80 transition-opacity">
+                                <i v-else class="ph ph-image text-4xl text-gray-300"></i>
+                            </div>
+                            
+                            <!-- 名稱與狀態 -->
+                            <div class="p-3 flex items-center gap-2.5 border-t border-gray-50 bg-white">
+                                <input type="checkbox" v-model="item.done" class="flex-shrink-0">
+                                <span :class="{'text-gray-400 line-through': item.done, 'text-gray-800': !item.done}" class="flex-1 text-[13px] font-bold truncate transition-colors">
+                                    {{ item.text }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="mt-4 pt-4 border-t border-gray-100 flex flex-col gap-3">
@@ -331,7 +334,6 @@
                 </div>
             </section>
 
-            <!-- ＝＝＝＝＝ 美食 ＝＝＝＝＝ -->
             <section v-show="currentTab === '美食'" class="space-y-4">
                 <!-- 地區與種類過濾選單 -->
                 <div class="flex gap-3 pb-1">
@@ -453,14 +455,29 @@
                     
                     <!-- 行程表單 -->
                     <div v-if="showAddItineraryModal" class="space-y-4">
-                        <div class="ios-card overflow-hidden">
-                            <input type="time" v-model="newTask.time" class="w-full bg-white px-4 py-3.5 text-[16px] border-b border-gray-100 focus:outline-none focus:bg-blue-50/30 transition-colors text-gray-900 font-medium">
+                        <div class="ios-card overflow-hidden flex flex-col">
+                            
+                            <!-- 改造後的時間選擇按鈕 (仿 iOS 設定介面風格) -->
+                            <div class="flex items-center justify-between px-4 py-3.5 border-b border-gray-100 bg-white relative">
+                                <div class="flex items-center gap-2 text-gray-900 font-bold text-[16px]">
+                                    <i class="ph-fill ph-clock text-[#007AFF] text-xl"></i>
+                                    <span>行程時間</span>
+                                </div>
+                                <div class="relative">
+                                    <div class="bg-gray-100 text-[#007AFF] px-3.5 py-1.5 rounded-lg font-bold text-[16px] flex items-center gap-2 cursor-pointer active:bg-gray-200 transition-colors shadow-sm">
+                                        {{ newTask.time || '設定時間' }}
+                                    </div>
+                                    <!-- 隱藏的實際 input，覆蓋在按鈕上方以便觸發原生選擇器 -->
+                                    <input type="time" v-model="newTask.time" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                </div>
+                            </div>
+                            
                             <input type="text" v-model="newTask.text" placeholder="行程名稱 (必填)" class="w-full bg-white px-4 py-3.5 text-[16px] border-b border-gray-100 focus:outline-none focus:bg-blue-50/30 transition-colors text-gray-900 font-medium">
                             <input type="url" v-model="newTask.url" placeholder="地圖連結 (選填)" class="w-full bg-white px-4 py-3.5 text-[16px] border-b border-gray-100 focus:outline-none focus:bg-blue-50/30 transition-colors text-gray-900">
                             <input type="text" v-model="newTask.transitToNext" placeholder="交通備註 (選填，如: 搭地鐵20分)" class="w-full bg-white px-4 py-3.5 text-[16px] focus:outline-none focus:bg-blue-50/30 transition-colors text-gray-900">
                         </div>
                         <button @click="saveTask" class="w-full bg-[#007AFF] text-white py-3.5 rounded-xl text-[16px] font-bold active:bg-blue-600 transition-colors shadow-sm">
-                            儲存
+                            儲存行程
                         </button>
                     </div>
 
@@ -508,7 +525,7 @@
             </div>
         </transition>
 
-        <!-- ＝＝＝＝＝ 全螢幕圖片放大 Modal ＝＝＝＝＝ -->
+        <!-- 全螢幕圖片放大 Modal -->
         <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
             <div v-if="fullscreenImage" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm" @click="fullscreenImage = null">
                 <button class="absolute top-16 right-6 w-10 h-10 bg-white/20 text-white rounded-full flex items-center justify-center font-bold text-xl active:bg-white/30 transition-colors z-[70] backdrop-blur-md" @click.stop="fullscreenImage = null">✕</button>
@@ -605,28 +622,28 @@
                         { id: 'f5', name: 'Bagel Land', type: '麵包', url: 'https://www.google.com/maps/place/Bagel+Land/data=!4m2!3m1!1s0x357c990de784bdb9:0x767d1e503e2b5630', area: '弘大', rating: 5 },
                         { id: 'f6', name: 'Bubing', type: '甜品', url: 'https://www.google.com/maps/place/Bubing/data=!4m2!3m1!1s0x357ca2b1dc8d124f:0xa8e2a7b176610684', area: '明洞', rating: 5 },
                         { id: 'f7', name: '연어롭다', type: '韓餐', url: 'https://www.google.com/maps/place/%EC%97%B0%EC%96%B4%EB%A1%AD%EB%8B%A4/data=!4m2!3m1!1s0x357c98e914423fd3:0x1acec805ac2c7892', area: '弘大', rating: 5 },
-                        { id: 'f8', name: 'Butty Sandwich House', type: '麵包', url: 'https://www.google.com/maps/place/Butty+Sandwich+House/data=!4m2!3m1!1s0x357ca514a1c111f1:0xb22f2464eff87524', area: '聖水洞', rating: 5 },
+                        { id: 'f8', name: 'Butty Sandwich House', type: '西餐', url: 'https://www.google.com/maps/place/Butty+Sandwich+House/data=!4m2!3m1!1s0x357ca514a1c111f1:0xb22f2464eff87524', area: '聖水洞', rating: 5 },
                         { id: 'f9', name: 'Kyeong Yang Katsu', type: '韓餐', url: 'https://www.google.com/maps/place/Kyeong+Yang+Katsu/data=!4m2!3m1!1s0x357c995ac7e8847b:0x939c0c7a5de82fad', area: '弘大', rating: 5 },
                         { id: 'f10', name: 'Camello Yeonnam', type: '西餐', url: 'https://www.google.com/maps/place/Camello+Yeonnam/data=!4m2!3m1!1s0x357c99e57b0d053b:0xf3e40fe627414b1e', area: '弘大', rating: 5 },
                         { id: 'f11', name: 'Oatt Brunch', type: '西餐', url: 'https://www.google.com/maps/place/Oatt+Brunch/data=!4m2!3m1!1s0x357ca5006f2bc31b:0x1d454acd490f3cf4', area: '聖水洞', rating: 5 },
                         { id: 'f12', name: 'Rafre Fruit', type: '甜品', url: 'https://www.google.com/maps/place/Rafre+Fruit/data=!4m2!3m1!1s0x357ca3d34bd6e9cf:0x7ce75909054a69c', area: '聖水洞', rating: 5 },
                         { id: 'f13', name: 'Haz Bakery', type: '麵包', url: 'https://www.google.com/maps/place/Haz+Bakery/data=!4m2!3m1!1s0x357ca5000ccbd921:0xb857d4a709fb6411', area: '聖水洞', rating: 5 },
-                        { id: 'f14', name: 'Ppasam', type: '韓餐', url: 'https://www.google.com/maps/place/Ppasam/data=!4m2!3m1!1s0x357ca3e224e8b537:0x9ef32ea98fcfc00e', area: '明洞', rating: 5 },
+                        { id: 'f14', name: 'Ppasam', type: '甜品', url: 'https://www.google.com/maps/place/Ppasam/data=!4m2!3m1!1s0x357ca3e224e8b537:0x9ef32ea98fcfc00e', area: '明洞', rating: 5 },
                         { id: 'f15', name: 'Ugly Bakery', type: '麵包', url: 'https://www.google.com/maps/place/Ugly+Bakery/data=!4m2!3m1!1s0x357c9925aef9f56f:0x2104ffb47ee6fa7e', area: '弘大', rating: 5 },
-                        { id: 'f16', name: '安東家手工刀切麵', type: '韓餐', url: 'https://www.google.com/maps/place/%E5%AE%89%E6%9D%B1%E5%AE%B6%E6%89%8B%E5%B7%A5%E5%88%80%E5%88%87%E9%BA%B5/data=!4m2!3m1!1s0x357cbca83b69f8a1:0xf3dd80558526428', area: '明洞', rating: 5 },
+                        { id: 'f16', name: '安東家手工刀切麵', type: '麵食', url: 'https://www.google.com/maps/place/%E5%AE%89%E6%9D%B1%E5%AE%B6%E6%89%8B%E5%B7%A5%E5%88%80%E5%88%87%E9%BA%B5/data=!4m2!3m1!1s0x357cbca83b69f8a1:0xf3dd80558526428', area: '明洞', rating: 5 },
                         { id: 'f17', name: 'etre bakehouse', type: '麵包', url: 'https://www.google.com/maps/place/etre+bakehouse/data=!4m2!3m1!1s0x357ca5005051193f:0xd7e0878217e61e4c', area: '聖水洞', rating: 5 },
                         { id: 'f18', name: 'Meitawang Egg Tart', type: '甜品', url: 'https://www.google.com/maps/place/Meitawang+Egg+Tart/data=!4m2!3m1!1s0x357ca5ca12a995b5:0x4d9a46b4b573694a', area: '聖水洞', rating: 5 },
                         { id: 'f19', name: 'Maman Gelato Seongsu', type: '甜品', url: 'https://www.google.com/maps/place/Maman+Gelato+Seongsu/data=!4m2!3m1!1s0x357ca500039e5091:0x6c557e0ce59b198d', area: '聖水洞', rating: 5 },
                         { id: 'f20', name: '明洞餃子 本店', type: '韓餐', url: 'https://www.google.com/maps/place/%E6%98%8E%E6%B4%9E%E9%A4%83%E5%AD%90+%E6%9C%AC%E5%BA%97/data=!4m2!3m1!1s0x357ca2f00d41b15b:0x7d50d5b6b0623a1d', area: '明洞', rating: 5 },
                         { id: 'f21', name: '瑞源粥', type: '韓餐', url: 'https://www.google.com/maps/place/%E7%91%9E%E6%BA%90%E7%B2%A5/data=!4m2!3m1!1s0x357ca2fa9262d52b:0x60a462c97752f6c', area: '明洞', rating: 5 },
-                        { id: 'f22', name: '安木豬肉湯飯', type: '韓餐', url: 'https://www.google.com/maps/place/%E5%AE%89%E6%9C%A8%E8%B1%86%E8%82%89%E6%B9%AF%E9%A3%AF/data=!4m2!3m1!1s0x357ca54ec367edbf:0x348537f8ead0b9eb', area: '聖水洞', rating: 5 },
+                        { id: 'f22', name: '安木豬肉湯飯', type: '韓餐', url: 'https://www.google.com/maps/place/%E5%AE%89%E6%9C%A8%E8%B1%AC%E8%82%89%E6%B9%AF%E9%A3%AF/data=!4m2!3m1!1s0x357ca54ec367edbf:0x348537f8ead0b9eb', area: '聖水洞', rating: 5 },
                         { id: 'f23', name: '無垢屋 聖水店', type: '韓餐', url: 'https://www.google.com/maps/place/%E7%84%A1%E5%9E%A2%E5%B1%8B+%E8%81%96%E6%B0%B4%E5%BA%97/data=!4m2!3m1!1s0x357ca5df1ce46d09:0xe9d21fa0c6a0ba66', area: '聖水洞', rating: 5 },
                         { id: 'f24', name: '祖傳三代馬鈴薯排骨湯', type: '韓餐', url: 'https://www.google.com/maps/place/%E7%A5%96%E5%82%B3%E4%B8%89%E4%BB%A3%E9%A6%AC%E9%88%B4%E8%96%AF%E6%8E%92%E9%AA%A8%E6%B9%AF/data=!4m2!3m1!1s0x357ca4913140fbb5:0x7897953e193bd3f9', area: '聖水洞', rating: 5 },
                         { id: 'f25', name: 'ETF베이커리 성수', type: '麵包', url: 'https://www.google.com/maps/place/ETF%EB%B2%A0%EC%9D%B4%EC%BB%A4%EB%A6%AC+%EC%84%B1%EC%88%98/data=!4m2!3m1!1s0x357ca50007f812a1:0x567f9181f6dbf7ea', area: '聖水洞', rating: 5 },
                         { id: 'f26', name: 'Malic coffee', type: '甜品', url: 'https://www.google.com/maps/place/Malic+coffee/data=!4m2!3m1!1s0x357c98c24b181a71:0xc7e898869cf4117b', area: '弘大', rating: 5 },
-                        { id: 'f27', name: 'GONGGANGAB', type: '甜品', url: 'https://www.google.com/maps/place/GONGGANGAB/data=!4m2!3m1!1s0x357ca2e43f8b7f91:0xcc9f85c751b6f223', area: '明洞', rating: 5 },
-                        { id: 'f28', name: 'BriBeet', type: '甜品', url: 'https://www.google.com/maps/place/BriBeet/data=!4m2!3m1!1s0x357ca58c68be650f:0xfda1c4065eb07d09', area: '聖水洞', rating: 5 },
-                        { id: 'f29', name: '朝朝刀削麵', type: '韓餐', url: 'https://www.google.com/maps/place/%E6%9C%9D%E6%9C%9D%E5%88%80%E5%89%8A%E9%BA%B5/data=!4m2!3m1!1s0x357ca3b8fe39135d:0x73dd4c1f7c2430c8', area: '明洞', rating: 5 },
+                        { id: 'f27', name: 'GONGGANGAB', type: '西餐', url: 'https://www.google.com/maps/place/GONGGANGAB/data=!4m2!3m1!1s0x357ca2e43f8b7f91:0xcc9f85c751b6f223', area: '明洞', rating: 5 },
+                        { id: 'f28', name: 'BriBeet', type: '西餐', url: 'https://www.google.com/maps/place/BriBeet/data=!4m2!3m1!1s0x357ca58c68be650f:0xfda1c4065eb07d09', area: '聖水洞', rating: 5 },
+                        { id: 'f29', name: '朝朝刀削麵', type: '麵食', url: 'https://www.google.com/maps/place/%E6%9C%9D%E6%9C%9D%E5%88%80%E5%89%8A%E9%BA%B5/data=!4m2!3m1!1s0x357ca3b8fe39135d:0x73dd4c1f7c2430c8', area: '明洞', rating: 5 },
                         { id: 'f30', name: 'Perment Bakeshop Seoul Forest', type: '麵包', url: 'https://www.google.com/maps/place/Perment+Bakeshop+Seoul+Forest/data=!4m2!3m1!1s0x357ca5b451894f01:0x40186fa01ca21130', area: '聖水洞', rating: 5 },
                         { id: 'f31', name: '新村奶油燉排骨', type: '韓餐', url: 'https://www.google.com/maps/place/%E6%96%B0%E6%9D%91%E5%A5%B6%E6%B2%B9%E7%87%89%E6%8E%92%E9%AA%A8/data=!4m2!3m1!1s0x357c989459a703ef:0xcf6b740f1ea9aa98', area: '弘大', rating: 5 },
                         { id: 'f32', name: 'oats coffee', type: '甜品', url: 'https://www.google.com/maps/place/oats+coffee/data=!4m2!3m1!1s0x357c98ce32d3e313:0x9323f89dbb357ef8', area: '弘大', rating: 5 },
@@ -640,27 +657,20 @@
                         { id: 'f40', name: '로이로이', type: '甜品', url: 'https://www.google.com/maps/place/%EB%A1%9C%EC%9D%B4%EB%A1%9C%EC%9D%B4/data=!4m2!3m1!1s0x357c99eaf36c9123:0x48d19b8eae1651bf', area: '弘大', rating: 5 },
                         { id: 'f41', name: '土俗村 蔘鷄湯', type: '蔘雞湯', url: 'https://www.google.com/maps/place/%E5%9C%9F%E4%BF%97%E6%9D%91+%E8%94%98%E9%B7%84%E6%B9%AF/data=!4m2!3m1!1s0x357ca2be188e936f:0xe0687c7b0f486f53', area: '明洞', rating: 5 },
                         { id: 'f42', name: '韓貞仙', type: '甜品', url: 'https://www.google.com/maps/place/%E9%9F%93%E8%B2%9E%E4%BB%99/data=!4m2!3m1!1s0x357ca500659ea3e3:0x63f2feeed9344627', area: '聖水洞', rating: 5 },
-                        { id: 'f43', name: '오레노라멘 본점', type: '韓餐', url: 'https://www.google.com/maps/place/%EC%98%A4%EB%A0%88%EB%85%B8%EB%9D%BC%EB%A9%98+%EB%B3%B8%EC%A0%90/data=!4m2!3m1!1s0x357c98d15ae684a9:0x876683a301bb2aaf', area: '弘大', rating: 5 },
+                        { id: 'f43', name: '오레노라멘 본점', type: '麵食', url: 'https://www.google.com/maps/place/%EC%98%A4%EB%A0%88%EB%85%B8%EB%9D%BC%EB%A9%98+%EB%B3%B8%EC%A0%90/data=!4m2!3m1!1s0x357c98d15ae684a9:0x876683a301bb2aaf', area: '弘大', rating: 5 },
                         { id: 'f44', name: 'MintChoco World', type: '甜品', url: 'https://www.google.com/maps/place/MintChoco+World/data=!4m2!3m1!1s0x357c9909a6fdd8f1:0x9de625296cabc794', area: '弘大', rating: 5 },
                         { id: 'f45', name: '리차드하우스 연남', type: '西餐', url: 'https://www.google.com/maps/place/%EB%A6%AC%EC%B0%A8%EB%93%9C%ED%95%98%EC%9A%B0%EC%8A%A4+%EC%97%B0%EB%82%A8/data=!4m2!3m1!1s0x357c99f66db83751:0xd70d5ad6f8203055', area: '弘大', rating: 5 },
                         { id: 'f46', name: 'Wooyookmi', type: '燒肉', url: 'https://www.google.com/maps/place/Wooyookmi/data=!4m2!3m1!1s0x357ca34a333cb723:0x5636f1d7d12b4725', area: '明洞', rating: 5 },
-                        { id: 'f47', name: '희죽희죽', type: '甜品', url: 'https://www.google.com/maps/place/%ED%9D%AC%EC%A3%BD%ED%9D%AC%EC%A3%BD/data=!4m2!3m1!1s0x357ca2fac19ccb71:0xba0f54ba4da75fac', area: '明洞', rating: 5 },
+                        { id: 'f47', name: '희죽희죽', type: '韓餐', url: 'https://www.google.com/maps/place/%ED%9D%AC%EC%A3%BD%ED%9D%AC%EC%A3%BD/data=!4m2!3m1!1s0x357ca2fac19ccb71:0xba0f54ba4da75fac', area: '明洞', rating: 5 },
                         { id: 'f48', name: 'Mibbedong', type: '韓餐', url: 'https://www.google.com/maps/place/Mibbedong/data=!4m2!3m1!1s0x357c99b77808227f:0x17d8900d8eac34bb', area: '弘大', rating: 5 },
-                        { id: 'f49', name: 'JO & DAWSON', type: '甜品', url: 'https://www.google.com/maps/place/JO+%26+DAWSON/data=!4m2!3m1!1s0x357c99d9fba2518b:0xb76011a0c279256c', area: '弘大', rating: 5 },
+                        { id: 'f49', name: 'JO & DAWSON', type: '西餐', url: 'https://www.google.com/maps/place/JO+%26+DAWSON/data=!4m2!3m1!1s0x357c99d9fba2518b:0xb76011a0c279256c', area: '弘大', rating: 5 },
                         { id: 'f50', name: 'Mashitaya', type: '韓餐', url: 'https://www.google.com/maps/place/Mashitaya/data=!4m2!3m1!1s0x357c98c3d1e57167:0xbf65ed60ed2753d6', area: '弘大', rating: 5 },
-                        { id: 'f51', name: '紫霞手工水餃', type: '韓餐', url: 'https://www.google.com/maps/place/%E7%B4%AB%E9%9C%9E%E6%89%8B%E5%B7%A5%E6%B0%B4%E9%A4%83/data=!4m2!3m1!1s0x357ca2b1ecf6520b:0xd7ecb06428cd993', area: '明洞', rating: 5 },
+                        { id: 'f51', name: '紫霞手工水餃', type: '麵食', url: 'https://www.google.com/maps/place/%E7%B4%AB%E9%9C%9E%E6%89%8B%E5%B7%A5%E6%B0%B4%E9%A4%83/data=!4m2!3m1!1s0x357ca2b1ecf6520b:0xd7ecb06428cd993', area: '明洞', rating: 5 },
                         { id: 'f52', name: '順姬家綠豆煎餅', type: '韓餐', url: 'https://www.google.com/maps/place/%E9%A0%86%E5%A7%AC%E5%AE%B6%E7%B6%A0%E8%B1%86%E7%85%8E%E9%A4%85/data=!4m2!3m1!1s0x357ca32116b15d47:0x48dcc90eea572b60', area: '明洞', rating: 5 },
                         { id: 'f53', name: 'Artist Bakery', type: '麵包', url: 'https://www.google.com/maps/place/Artist+Bakery/data=!4m2!3m1!1s0x357ca3af16e959a7:0x96157e8b659e7eb6', area: '明洞', rating: 5 },
                         { id: 'f54', name: '安岩', type: '韓餐', url: 'https://www.google.com/maps/place/%E5%AE%89%E5%B2%A9/data=!4m2!3m1!1s0x357ca3301158e705:0x2ecb7e16a67aa259', area: '明洞', rating: 5 },
                         { id: 'f55', name: '孔陵一隻雞', type: '蔘雞湯', url: 'https://www.google.com/maps/place/%E5%AD%94%E9%99%B5%E4%B8%80%E9%9A%BB%E9%9B%9E/data=!4m2!3m1!1s0x357ca32483ce340d:0xc97fd4faa6e98dda', area: '明洞', rating: 5 },
-                        { id: 'f56', name: '카페오라', type: '甜品', url: 'https://www.google.com/maps/place/%EC%B9%B4%ED%8E%98%EC%98%A4%EB%9D%BC/data=!4m2!3m1!1s0x357ca49f2a1a97c5:0x1c6f0ac282b9065', area: '聖水洞', rating: 5 },
-                        { id: 'f57', name: 'Dokdo 16 celcius', type: '燒肉', url: 'https://www.google.com/maps/place/Dokdo+16+celcius/data=!4m2!3m1!1s0x357ca35f4750d96d:0xdf74f6577b1bf393', area: '明洞', rating: 5 },
-                        { id: 'f58', name: '돈수백 홍대직영점', type: '韓餐', url: 'https://www.google.com/maps/place/%EB%8F%88%EC%88%98%EB%B0%B1+%ED%99%8D%EB%8C%80%EC%A7%81%EC%98%81%EC%A0%90/data=!4m2!3m1!1s0x357c98c2f862a977:0x781c5e6aef6534c5', area: '弘大', rating: 5 },
-                        { id: 'f59', name: 'Central Reducer', type: '西餐', url: 'https://www.google.com/maps/place/Central+Reducer/data=!4m2!3m1!1s0x357ca5267692683d:0x59b981c20aad69a4', area: '聖水洞', rating: 5 },
-                        { id: 'f60', name: 'SWEATHER Yeonnam Bakery Café', type: '麵包', url: 'https://www.google.com/maps/place/SWEATHER+Yeonnam+Bakery+Caf%C3%A9/data=!4m2!3m1!1s0x357c993f55a30425:0x554b1f7829a31119', area: '弘大', rating: 5 },
-                        { id: 'f61', name: 'Hippo Cafeteria', type: '西餐', url: 'https://www.google.com/maps/place/Hippo+Cafeteria/data=!4m2!3m1!1s0x357c99801c781063:0x5d3bc64479ec9c7c', area: '弘大', rating: 5 },
-                        { id: 'f62', name: '은빛물결황금낙지', type: '韓餐', url: 'https://www.google.com/maps/place/%EC%9D%80%EB%B9%9B%EB%AC%BC%EA%B2%B0%ED%99%A9%EA%B8%88%EB%82%99%EC%A7%80/data=!4m2!3m1!1s0x357ca48e1959b997:0x50e2ba6c2f5459f0', area: '聖水洞', rating: 5 },
-                        { id: 'f63', name: 'Spring Garden Seongsu', type: '西餐', url: 'https://www.google.com/maps/place/Spring Garden Seongsu/data=!4m2!3m1!1s0x357ca5df5d5c0e15:0x8ba671c69a7c6453', area: '聖水洞', rating: 5 }
+                        { id: 'f56', name: '카페오라', type: '甜品', url: 'https://www.google.com/maps/place/%EC%B9%B4%ED%8E%98%EC%98%A4%EB%9D%BC/data=!4m2!3m1!1s0x357ca49f2a1a97c5:0x1c6f0ac282b9065', area: '聖水洞', rating: 5 }
                     ],
                     
                     sortableInstances: []
@@ -720,7 +730,7 @@
             },
             created() {
                 this.loadData();
-                // 確保 foodList 扁平化轉型 (向下相容舊版結構)
+                // 確保 foodList 扁平化轉型
                 if (this.foodList && !Array.isArray(this.foodList)) {
                     let flatList = [];
                     Object.keys(this.foodList).forEach(area => {
@@ -742,7 +752,6 @@
                     this.syncStatus = 'connecting';
                     localStorage.setItem('appleTravel_tripCode', this.tripCode);
 
-                    // 等待 Firebase SDK 載入
                     let retryCount = 0;
                     while (!window.FirebaseSDK && retryCount < 20) {
                         await new Promise(r => setTimeout(r, 200));
@@ -750,7 +759,6 @@
                     }
 
                     if (!window.FirebaseSDK) {
-                        console.warn('Firebase SDK unavailable, running in offline mode.');
                         this.syncStatus = 'offline';
                         return;
                     }
@@ -758,9 +766,6 @@
                     const { initializeApp, getAuth, signInAnonymously, getFirestore, doc, setDoc, onSnapshot } = window.FirebaseSDK;
 
                     try {
-                        // ==========================================
-                        // 🔴 步驟一：請在這裡填寫你的 Firebase Config 🔴
-                        // ==========================================
                         const firebaseConfig = {
                             apiKey: "AIzaSyC4ByY5EGPXsakZ5V_p7WbsWnLFhmDMxrg",
                             authDomain: "seoul-0429.firebaseapp.com",
@@ -771,12 +776,9 @@
                             measurementId: "G-3ZQ0SST761"
                         };
                         
-                        // 定義你的專案名稱（作為資料庫的根路徑）
                         const appId = 'my-travel-planner';
 
-                        // 判斷是否為預設字串，避免沒改到就執行噴錯
                         if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-                            console.warn('請先到程式碼中填寫 Firebase Config 才能使用雲端同步功能。');
                             this.syncStatus = 'offline';
                             return;
                         }
@@ -784,24 +786,16 @@
                         const fbApp = initializeApp(firebaseConfig);
                         const auth = getAuth(fbApp);
                         const db = getFirestore(fbApp);
-
-                        // 進行身份認證 (匿名登入)
                         const cred = await signInAnonymously(auth);
                         const user = cred.user;
 
-                        if (!user) {
-                            this.syncStatus = 'offline';
-                            return;
-                        }
-
+                        if (!user) { this.syncStatus = 'offline'; return; }
                         this.db = db;
                         this.appId = appId;
 
                         if (this.unsubscribeCloud) this.unsubscribeCloud();
-
                         const tripDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'trips', this.tripCode);
 
-                        // 設置實時數據監聽
                         this.unsubscribeCloud = onSnapshot(tripDocRef, (snapshot) => {
                             if (snapshot.exists()) {
                                 const data = snapshot.data();
@@ -811,26 +805,22 @@
                                 if (data.shoppingList) this.shoppingList = data.shoppingList;
                                 if (data.foodList) this.foodList = data.foodList;
                                 
-                                this.$nextTick(() => {
-                                    this.isRemoteUpdate = false;
-                                });
+                                this.$nextTick(() => { this.isRemoteUpdate = false; });
                             } else {
                                 this.saveToCloud();
                             }
                             this.syncStatus = 'synced';
                         }, (error) => {
-                            console.error('Firestore snapshot listener error:', error);
                             this.syncStatus = 'error';
                         });
 
                     } catch (e) {
-                        console.error('Cloud sync initialization failed:', e);
                         this.syncStatus = 'offline';
                     }
                 },
 
                 handleDataChange() {
-                    this.saveData(); // 儲存至 local storage 備份
+                    this.saveData(); 
                     if (!this.isRemoteUpdate) {
                         this.saveToCloud();
                     }
@@ -851,7 +841,6 @@
                         }, { merge: true });
                         this.syncStatus = 'synced';
                     } catch (e) {
-                        console.error('Save to cloud failed:', e);
                         this.syncStatus = 'error';
                     }
                 },
@@ -866,9 +855,7 @@
                         document.execCommand('copy');
                         this.copyBtnText = '已複製！';
                         setTimeout(() => { this.copyBtnText = '複製'; }, 2000);
-                    } catch (err) {
-                        console.error('Copy failed:', err);
-                    }
+                    } catch (err) {}
                     document.body.removeChild(textarea);
                 },
 
@@ -884,7 +871,6 @@
 
                 async fetchExchangeRate() {
                     try {
-                        // 使用 ExchangeRate-API 獲取免費的即時匯率
                         const res = await fetch('https://api.exchangerate-api.com/v4/latest/HKD');
                         const data = await res.json();
                         if (data && data.rates && data.rates.KRW) {
@@ -893,13 +879,11 @@
                             this.exchangeRate = '170.0';
                         }
                     } catch (e) {
-                        console.error('Failed to fetch exchange rate:', e);
-                        this.exchangeRate = '170.0'; // 備用靜態匯率
+                        this.exchangeRate = '170.0'; 
                     }
                 },
                 async fetchWeather() {
                     try {
-                        // 使用 Open-Meteo 免費氣象 API 取得首爾 (緯度 37.566, 經度 126.978) 的即時天氣
                         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.566&longitude=126.978&current_weather=true');
                         const data = await res.json();
                         if (data && data.current_weather) {
@@ -909,21 +893,19 @@
                             this.weatherIcon = this.getWeatherIcon(code);
                         }
                     } catch (e) {
-                        console.error('Failed to fetch weather:', e);
-                        this.currentTemp = '26°C'; // 備用靜態溫度
-                        this.weatherIcon = '<i class="ph-fill ph-sun text-yellow-500"></i>'; // 備用靜態圖示
+                        this.currentTemp = '26°C'; 
+                        this.weatherIcon = '<i class="ph-fill ph-sun text-yellow-500"></i>'; 
                     }
                 },
                 getWeatherIcon(code) {
-                    // WMO 天氣代碼對應統一圖示 (Phosphor Icons)
-                    if (code === 0) return '<i class="ph-fill ph-sun text-yellow-500"></i>'; // 晴天
-                    if (code === 1) return '<i class="ph-fill ph-cloud-sun text-gray-400"></i>'; // 晴時多雲
-                    if (code === 2) return '<i class="ph-fill ph-cloud text-gray-400"></i>'; // 多雲
-                    if (code === 3) return '<i class="ph-fill ph-cloud text-gray-500"></i>'; // 陰天
-                    if (code >= 45 && code <= 48) return '<i class="ph-fill ph-cloud-fog text-gray-400"></i>'; // 霧
-                    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return '<i class="ph-fill ph-cloud-rain text-blue-400"></i>'; // 陣雨/下雨
-                    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return '<i class="ph-fill ph-snowflake text-blue-200"></i>'; // 降雪
-                    if (code >= 95 && code <= 99) return '<i class="ph-fill ph-cloud-lightning text-yellow-600"></i>'; // 雷雨
+                    if (code === 0) return '<i class="ph-fill ph-sun text-yellow-500"></i>'; 
+                    if (code === 1) return '<i class="ph-fill ph-cloud-sun text-gray-400"></i>'; 
+                    if (code === 2) return '<i class="ph-fill ph-cloud text-gray-400"></i>'; 
+                    if (code === 3) return '<i class="ph-fill ph-cloud text-gray-500"></i>'; 
+                    if (code >= 45 && code <= 48) return '<i class="ph-fill ph-cloud-fog text-gray-400"></i>'; 
+                    if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return '<i class="ph-fill ph-cloud-rain text-blue-400"></i>'; 
+                    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return '<i class="ph-fill ph-snowflake text-blue-200"></i>'; 
+                    if (code >= 95 && code <= 99) return '<i class="ph-fill ph-cloud-lightning text-yellow-600"></i>'; 
                     return '<i class="ph-fill ph-sun text-yellow-500"></i>';
                 },
                 generateId() { return Math.random().toString(36).substr(2, 9); },
@@ -944,13 +926,11 @@
                         const targetArea = this.newRestaurant.area.trim() || '其他';
                         
                         if (this.isEditingRestaurant) {
-                            // 更新現有餐廳
                             const idx = this.foodList.findIndex(item => item.id === this.newRestaurant.id);
                             if (idx !== -1) {
                                 this.foodList[idx] = { ...this.newRestaurant, area: targetArea };
                             }
                         } else {
-                            // 新增餐廳
                             this.foodList.unshift({
                                 id: this.generateId(),
                                 name: this.newRestaurant.name.trim(),
@@ -961,6 +941,61 @@
                             });
                         }
                         this.closeModals();
+                    }
+                },
+
+                // --- 時間換算 Helper Functions ---
+                timeToMinutes(timeStr) {
+                    if (!timeStr || !timeStr.includes(':')) return null;
+                    const [h, m] = timeStr.split(':').map(Number);
+                    return (h || 0) * 60 + (m || 0);
+                },
+                minutesToTime(mins) {
+                    mins = Math.max(0, Math.min(24 * 60 - 1, mins)); // 限制在 00:00 - 23:59
+                    const h = Math.floor(mins / 60).toString().padStart(2, '0');
+                    const m = Math.floor(mins % 60).toString().padStart(2, '0');
+                    return `${h}:${m}`;
+                },
+                
+                // 拖曳結束後自動調整行程時間
+                adjustTimeOnDrop(list, newIndex) {
+                    if (list.length <= 1) return;
+                    const item = list[newIndex];
+                    let newMins = null;
+                    
+                    if (newIndex === 0) { 
+                        // 移到最上面，比下一個行程提早 1 小時
+                        const next = list[1];
+                        const nextMins = next && next.time ? this.timeToMinutes(next.time) : 10 * 60; 
+                        newMins = Math.max(0, nextMins - 60);
+                    } else if (newIndex === list.length - 1) { 
+                        // 移到最下面，比上一個行程延後 1 小時
+                        const prev = list[list.length - 2];
+                        const prevMins = prev && prev.time ? this.timeToMinutes(prev.time) : 17 * 60;
+                        newMins = Math.min(23 * 60 + 59, prevMins + 60);
+                    } else { 
+                        // 移到中間，取上下兩者的平均時間
+                        const prev = list[newIndex - 1];
+                        const next = list[newIndex + 1];
+                        const t1 = prev && prev.time ? this.timeToMinutes(prev.time) : null;
+                        const t2 = next && next.time ? this.timeToMinutes(next.time) : null;
+                        
+                        if (t1 !== null && t2 !== null) {
+                            if (t1 > t2) { 
+                                // 萬一順序原本就有衝突，加 30 分鐘
+                                newMins = Math.min(23 * 60 + 59, t1 + 30);
+                            } else {
+                                newMins = Math.floor((t1 + t2) / 2);
+                            }
+                        } else if (t1 !== null) {
+                            newMins = Math.min(23 * 60 + 59, t1 + 60);
+                        } else if (t2 !== null) {
+                            newMins = Math.max(0, t2 - 60);
+                        }
+                    }
+                    
+                    if (newMins !== null) {
+                        item.time = this.minutesToTime(newMins);
                     }
                 },
 
@@ -975,9 +1010,13 @@
                         if (this.$refs.itineraryList && this.currentTab === '行程表') {
                             this.sortableInstances.push(new Sortable(this.$refs.itineraryList, { ...opts,
                                 onEnd: (evt) => {
+                                    if (evt.oldIndex === evt.newIndex) return;
                                     const list = this.itinerary[this.selectedDay];
+                                    // 更換位置
                                     const item = list.splice(evt.oldIndex, 1)[0];
                                     list.splice(evt.newIndex, 0, item);
+                                    // 觸發時間自動調整
+                                    this.adjustTimeOnDrop(list, evt.newIndex);
                                 }
                             }));
                         }
@@ -1002,7 +1041,7 @@
 
                 // --- Storage ---
                 loadData() {
-                    const saved = localStorage.getItem('appleTravelData_v5');
+                    const saved = localStorage.getItem('appleTravelData_v6'); // 更新版號避免衝突
                     if (saved) {
                         try {
                             const parsed = JSON.parse(saved);
@@ -1022,7 +1061,7 @@
                     }
                 },
                 saveData() {
-                    localStorage.setItem('appleTravelData_v5', JSON.stringify({
+                    localStorage.setItem('appleTravelData_v6', JSON.stringify({
                         prepList: this.prepList,
                         itinerary: this.itinerary,
                         shoppingList: this.shoppingList,
@@ -1119,88 +1158,68 @@
             }
         });
 
-        // ＝＝＝＝＝ 自訂組件：滑動刪除 (Swipe to Delete) ＝＝＝＝＝
+        // ＝＝＝＝＝ 補齊的自訂組件：滑動刪除功能與圓環進度條 ＝＝＝＝＝
         app.component('swipe-item', {
             template: `
-                <div class="relative overflow-hidden w-full group"
-                     @touchstart="start" @touchmove="move" @touchend="end">
-                    <!-- 底層：紅色刪除按鈕 -->
-                    <div class="absolute inset-y-0 right-0 w-[80px] bg-red-500 flex items-center justify-center rounded-r-xl"
-                         @click.stop="triggerDelete">
-                        <span class="text-white font-medium text-sm">刪除</span>
+                <div class="relative overflow-hidden w-full touch-pan-y rounded-2xl" 
+                     @touchstart="startSwipe" @touchmove="moveSwipe" @touchend="endSwipe">
+                    <div class="absolute inset-y-0 right-0 w-20 bg-red-500 flex items-center justify-center text-white font-bold cursor-pointer"
+                         @click="$emit('delete')">
+                        刪除
                     </div>
-                    <!-- 表層：內容 -->
-                    <div class="relative z-10 h-full w-full bg-inherit transition-transform duration-300 ease-out rounded-xl"
+                    <div class="relative transition-transform duration-200 w-full h-full bg-white"
                          :style="{ transform: 'translateX(' + translateX + 'px)' }">
                         <slot></slot>
                     </div>
                 </div>
             `,
-            data() { return { startX: 0, startY: 0, translateX: 0, isDragging: false }; },
+            data() { return { startX: 0, currentX: 0, translateX: 0, isDragging: false }; },
             methods: {
-                start(e) {
-                    if(e.target.closest('.drag-handle')) return;
-                    this.startX = e.touches[0].clientX;
-                    this.startY = e.touches[0].clientY;
+                startSwipe(e) { 
+                    this.startX = e.touches[0].clientX; 
                     this.isDragging = true;
                 },
-                move(e) {
-                    if (!this.isDragging) return;
-                    const currX = e.touches[0].clientX;
-                    const currY = e.touches[0].clientY;
-                    const diffX = currX - this.startX;
-                    const diffY = currY - this.startY;
-
-                    if (Math.abs(diffY) > Math.abs(diffX) && this.translateX === 0) {
-                        this.isDragging = false;
-                        return;
-                    }
-
-                    if (diffX < 0) {
-                        this.translateX = Math.max(diffX, -90);
+                moveSwipe(e) {
+                    if(!this.isDragging) return;
+                    this.currentX = e.touches[0].clientX;
+                    const diff = this.currentX - this.startX;
+                    if(diff < 0) { // 向左滑
+                        this.translateX = Math.max(-80, diff);
                     } else {
                         this.translateX = 0;
                     }
                 },
-                end() {
+                endSwipe() {
                     this.isDragging = false;
-                    if (this.translateX < -45) {
-                        this.translateX = -80;
-                    } else {
-                        this.translateX = 0;
-                    }
-                },
-                triggerDelete() {
-                    this.$emit('delete');
-                    this.translateX = 0;
+                    // 若向左滑動超過 40px，則鎖定開啟刪除按鈕
+                    if(this.translateX < -40) this.translateX = -80; 
+                    else this.translateX = 0; 
                 }
             }
         });
 
-        // ＝＝＝＝＝ 自訂組件：Apple Watch 風格進度環 ＝＝＝＝＝
         app.component('progress-ring', {
             props: {
                 percentage: { type: Number, default: 0 },
-                size: { type: Number, default: 40 },
+                size: { type: Number, default: 46 },
                 stroke: { type: Number, default: 4 },
                 color: { type: String, default: 'stroke-[#007AFF]' }
             },
-            template: `
-                <svg :width="size" :height="size" class="transform -rotate-90">
-                    <circle cx="50%" cy="50%" :r="radius" fill="none" class="stroke-gray-200" :stroke-width="stroke" />
-                    <circle cx="50%" cy="50%" :r="radius" fill="none" :class="color"
-                            class="transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                            :stroke-width="stroke"
-                            :stroke-dasharray="circumference"
-                            :stroke-dashoffset="dashoffset"
-                            stroke-linecap="round" />
-                </svg>
-            `,
             computed: {
-                radius() { return (this.size / 2) - (this.stroke / 2); },
-                circumference() { return 2 * Math.PI * this.radius; },
-                dashoffset() { return this.circumference - (this.percentage / 100) * this.circumference; }
-            }
+                radius() { return (this.size / 2) - (this.stroke * 2); },
+                circumference() { return this.radius * 2 * Math.PI; },
+                strokeDashoffset() { return this.circumference - (this.percentage / 100) * this.circumference; }
+            },
+            template: `
+                <svg :width="size" :height="size" class="transform -rotate-90 drop-shadow-sm">
+                    <circle :cx="size/2" :cy="size/2" :r="radius" :stroke-width="stroke" stroke="currentColor" fill="transparent" class="text-gray-100"></circle>
+                    <circle :cx="size/2" :cy="size/2" :r="radius" :stroke-width="stroke" 
+                            :stroke-dasharray="circumference" 
+                            :stroke-dashoffset="strokeDashoffset" 
+                            stroke="currentColor" fill="transparent" 
+                            :class="['transition-all duration-700 ease-out', color]"></circle>
+                </svg>
+            `
         });
 
         app.mount('#app');
