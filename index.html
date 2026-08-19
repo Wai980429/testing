@@ -24,6 +24,17 @@
     <!-- PWA Manifest Injection -->
     <link rel="manifest" id="pwa-manifest">
     
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.FirebaseSDK = {
+            initializeApp, signInAnonymously, signInWithCustomToken,
+            getAuth, getFirestore, doc, setDoc, onSnapshot
+        };
+    </script>
+
     <style>
         /* Apple SF Pro 系統字體與基礎設定 */
         body { 
@@ -106,13 +117,21 @@
                     <img src="https://meee.com.tw/yhbbGbE" alt="App Icon" class="w-8 h-8 rounded-xl object-cover shadow-sm border border-black/5" onerror="this.style.display='none'">
                     <h1 class="text-3xl font-bold tracking-tight text-gray-900">{{ currentTab }}</h1>
                 </div>
-                <!-- 動態按鈕 -->
-                <button v-if="currentTab === '行程表'" @click="openAddModal" class="text-[#007AFF] font-semibold text-base active:opacity-50 transition-opacity">
-                    新增行程
-                </button>
-                <button v-if="currentTab === '美食'" @click="openAddRestaurantModal" class="text-[#007AFF] font-semibold text-base active:opacity-50 transition-opacity">
-                    ＋ 新增餐廳
-                </button>
+                <div class="flex items-center gap-2">
+                    <!-- 雲端跨裝置同步狀態按鈕 -->
+                    <button @click="showSyncModal = true" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/80 border border-gray-200/80 shadow-sm active:scale-95 transition-all">
+                        <i :class="syncStatusIconClass"></i>
+                        <span class="text-gray-700 text-[11px]">{{ syncStatusText }}</span>
+                    </button>
+
+                    <!-- 動態按鈕 -->
+                    <button v-if="currentTab === '行程表'" @click="openAddModal" class="text-[#007AFF] font-semibold text-base active:opacity-50 transition-opacity ml-1">
+                        新增行程
+                    </button>
+                    <button v-if="currentTab === '美食'" @click="openAddRestaurantModal" class="text-[#007AFF] font-semibold text-base active:opacity-50 transition-opacity ml-1">
+                        ＋ 新增餐廳
+                    </button>
+                </div>
             </div>
             
             <!-- 天氣區塊 (僅行程表) -->
@@ -374,6 +393,53 @@
 
         <!-- ＝＝＝＝＝ Modals ＝＝＝＝＝ -->
         <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-full" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-full">
+            <div v-if="showSyncModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
+                <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" @click="showSyncModal = false"></div>
+                <div class="relative bg-[#F2F2F7] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden pb-10 sm:pb-5">
+                    <div class="w-10 h-1.5 bg-gray-300 rounded-full mx-auto mb-5 sm:hidden"></div>
+                    
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="ph-fill ph-cloud-arrow-up text-2xl text-[#007AFF]"></i>
+                            <h3 class="text-xl font-bold text-gray-900">跨裝置實時同步</h3>
+                        </div>
+                        <button @click="showSyncModal = false" class="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-bold text-lg active:bg-gray-300">✕</button>
+                    </div>
+
+                    <p class="text-xs text-gray-500 mb-4 leading-relaxed">
+                        在其他手機或電腦開啟此網頁，並輸入相同的「行程代碼」，即可實時同步與多人共同編輯所有行程與清單。
+                    </p>
+
+                    <div class="ios-card p-4 space-y-3 mb-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-gray-500 font-medium">當前行程代碼</span>
+                            <span class="text-xs font-bold text-[#007AFF] bg-blue-50 px-2 py-0.5 rounded">{{ syncStatusText }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-gray-100 p-2.5 rounded-xl">
+                            <span class="font-mono text-lg font-bold text-gray-900 flex-1 px-2 select-all">{{ tripCode }}</span>
+                            <button @click="copyTripCode" class="bg-[#007AFF] text-white text-xs px-3 py-1.5 rounded-lg font-semibold active:bg-blue-600 transition-all flex items-center gap-1">
+                                <i class="ph-bold ph-copy"></i>
+                                {{ copyBtnText }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ios-card p-4 space-y-3">
+                        <label class="text-xs text-gray-500 font-medium block">切換或加入其他行程</label>
+                        <div class="flex gap-2">
+                            <input v-model="inputTripCode" placeholder="輸入行程代碼 (例如: SEOUL2026)" 
+                                   class="flex-1 bg-[#F2F2F7] px-3.5 py-2.5 rounded-xl text-sm font-semibold uppercase focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30">
+                            <button @click="switchTripCode" :disabled="!inputTripCode.trim()" 
+                                    class="bg-gray-900 text-white text-xs px-4 rounded-xl font-bold disabled:opacity-40 active:bg-gray-800">
+                                切換
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-full" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-full">
             <div v-if="showAddItineraryModal || showAddRestaurantModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
                 <!-- 遮罩 -->
                 <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" @click="closeModals"></div>
@@ -472,32 +538,21 @@
     </div>
 
     <script>
-        // --- 動態生成並注入 PWA Manifest ---
-        const manifestData = {
-            name: "Apple Style 旅程",
-            short_name: "旅程",
-            display: "standalone",
-            background_color: "#F2F2F7",
-            theme_color: "#F2F2F7",
-            // Android 與 PWA 主畫面 ICON 設定
-            icons: [
-                { 
-                    src: "https://meee.com.tw/yhbbGbE", 
-                    sizes: "192x192 512x512", 
-                    type: "image/png",
-                    purpose: "any maskable"
-                }
-            ]
-        };
-        const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/manifest+json'});
-        document.getElementById('pwa-manifest').href = URL.createObjectURL(manifestBlob);
-        // ------------------------------------
+        // ... existing manifest code ...
 
         const { createApp } = Vue;
 
         const app = createApp({
             data() {
                 return {
+                    showSyncModal: false,
+                    tripCode: localStorage.getItem('appleTravel_tripCode') || 'SEOUL-' + Math.floor(1000 + Math.random() * 9000),
+                    inputTripCode: '',
+                    syncStatus: 'connecting', // 'synced' | 'saving' | 'connecting' | 'offline' | 'error'
+                    copyBtnText: '複製',
+                    isRemoteUpdate: false,
+                    unsubscribeCloud: null,
+
                     showAddRestaurantModal: false,
                     showAddItineraryModal: false,
                     isEditingTask: false,
@@ -635,6 +690,20 @@
                 }
             },
             computed: {
+                syncStatusIconClass() {
+                    if (this.syncStatus === 'synced') return 'ph-fill ph-cloud-check text-emerald-500 animate-pulse-subtle';
+                    if (this.syncStatus === 'saving') return 'ph-bold ph-spinner animate-spin text-amber-500';
+                    if (this.syncStatus === 'offline') return 'ph-fill ph-cloud-slash text-gray-400';
+                    if (this.syncStatus === 'error') return 'ph-fill ph-cloud-warning text-red-500';
+                    return 'ph-bold ph-cloud-arrow-up text-blue-500 animate-pulse';
+                },
+                syncStatusText() {
+                    if (this.syncStatus === 'synced') return '已實時同步';
+                    if (this.syncStatus === 'saving') return '儲存中...';
+                    if (this.syncStatus === 'offline') return '離線模式';
+                    if (this.syncStatus === 'error') return '同步異常';
+                    return '連接雲端...';
+                },
                 completedPrepCount() { return this.prepList.filter(i => i.done).length; },
                 prepProgress() {
                     if (this.prepList.length === 0) return 0;
@@ -667,11 +736,10 @@
             watch: {
                 currentTab() { this.initSortable(); },
                 selectedDay() { this.initSortable(); },
-                // 深度監聽自動儲存至 LocalStorage
-                prepList: { handler() { this.saveData(); }, deep: true },
-                itinerary: { handler() { this.saveData(); }, deep: true },
-                shoppingList: { handler() { this.saveData(); }, deep: true },
-                foodList: { handler() { this.saveData(); }, deep: true }
+                prepList: { handler() { this.handleDataChange(); }, deep: true },
+                itinerary: { handler() { this.handleDataChange(); }, deep: true },
+                shoppingList: { handler() { this.handleDataChange(); }, deep: true },
+                foodList: { handler() { this.handleDataChange(); }, deep: true }
             },
             created() {
                 this.loadData();
@@ -690,8 +758,151 @@
                 this.initSortable();
                 this.fetchExchangeRate();
                 this.fetchWeather();
+                this.initCloudSync();
             },
             methods: {
+                async initCloudSync() {
+                    this.syncStatus = 'connecting';
+                    localStorage.setItem('appleTravel_tripCode', this.tripCode);
+
+                    // 等待 Firebase SDK 載入
+                    let retryCount = 0;
+                    while (!window.FirebaseSDK && retryCount < 20) {
+                        await new Promise(r => setTimeout(r, 200));
+                        retryCount++;
+                    }
+
+                    if (!window.FirebaseSDK) {
+                        console.warn('Firebase SDK unavailable, running in offline mode.');
+                        this.syncStatus = 'offline';
+                        return;
+                    }
+
+                    const { initializeApp, getAuth, signInWithCustomToken, signInAnonymously, getFirestore, doc, setDoc, onSnapshot } = window.FirebaseSDK;
+
+                    try {
+                        const appId = typeof __app_id !== 'undefined' ? __app_id : 'apple-travel-app';
+                        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+                        const initialToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+                        if (!firebaseConfig) {
+                            console.warn('No Firebase config available, fallback to offline.');
+                            this.syncStatus = 'offline';
+                            return;
+                        }
+
+                        const fbApp = initializeApp(firebaseConfig);
+                        const auth = getAuth(fbApp);
+                        const db = getFirestore(fbApp);
+
+                        // 進行身份認證
+                        let user = null;
+                        if (initialToken) {
+                            try {
+                                const cred = await signInWithCustomToken(auth, initialToken);
+                                user = cred.user;
+                            } catch (e) {
+                                const cred = await signInAnonymously(auth);
+                                user = cred.user;
+                            }
+                        } else {
+                            const cred = await signInAnonymously(auth);
+                            user = cred.user;
+                        }
+
+                        if (!user) {
+                            this.syncStatus = 'offline';
+                            return;
+                        }
+
+                        this.db = db;
+                        this.appId = appId;
+
+                        if (this.unsubscribeCloud) this.unsubscribeCloud();
+
+                        const tripDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'trips', this.tripCode);
+
+                        // 設置實時數據監聽
+                        this.unsubscribeCloud = onSnapshot(tripDocRef, (snapshot) => {
+                            if (snapshot.exists()) {
+                                const data = snapshot.data();
+                                this.isRemoteUpdate = true;
+                                if (data.prepList) this.prepList = data.prepList;
+                                if (data.itinerary) this.itinerary = data.itinerary;
+                                if (data.shoppingList) this.shoppingList = data.shoppingList;
+                                if (data.foodList) this.foodList = data.foodList;
+                                
+                                this.$nextTick(() => {
+                                    this.isRemoteUpdate = false;
+                                });
+                            } else {
+                                this.saveToCloud();
+                            }
+                            this.syncStatus = 'synced';
+                        }, (error) => {
+                            console.error('Firestore snapshot listener error:', error);
+                            this.syncStatus = 'error';
+                        });
+
+                    } catch (e) {
+                        console.error('Cloud sync initialization failed:', e);
+                        this.syncStatus = 'offline';
+                    }
+                },
+
+                handleDataChange() {
+                    this.saveData(); // 儲存至 local storage 備份
+                    if (!this.isRemoteUpdate) {
+                        this.saveToCloud();
+                    }
+                },
+
+                async saveToCloud() {
+                    if (!this.db || !this.appId || !this.tripCode) return;
+                    try {
+                        this.syncStatus = 'saving';
+                        const { doc, setDoc } = window.FirebaseSDK;
+                        const tripDocRef = doc(this.db, 'artifacts', this.appId, 'public', 'data', 'trips', this.tripCode);
+                        await setDoc(tripDocRef, {
+                            prepList: this.prepList,
+                            itinerary: this.itinerary,
+                            shoppingList: this.shoppingList,
+                            foodList: this.foodList,
+                            updatedAt: Date.now()
+                        }, { merge: true });
+                        this.syncStatus = 'synced';
+                    } catch (e) {
+                        console.error('Save to cloud failed:', e);
+                        this.syncStatus = 'error';
+                    }
+                },
+
+                copyTripCode() {
+                    const text = this.tripCode;
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                        this.copyBtnText = '已複製！';
+                        setTimeout(() => { this.copyBtnText = '複製'; }, 2000);
+                    } catch (err) {
+                        console.error('Copy failed:', err);
+                    }
+                    document.body.removeChild(textarea);
+                },
+
+                switchTripCode() {
+                    const code = this.inputTripCode.trim().toUpperCase();
+                    if (code) {
+                        this.tripCode = code;
+                        this.inputTripCode = '';
+                        this.showSyncModal = false;
+                        this.initCloudSync();
+                    }
+                },
+
                 async fetchExchangeRate() {
                     try {
                         // 使用 ExchangeRate-API 獲取免費的即時匯率
