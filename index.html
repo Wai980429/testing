@@ -496,7 +496,15 @@
                         </div>
                         <button @click="showSyncModal = false" class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center font-bold">✕</button>
                     </div>
-                    <p class="text-xs text-gray-500 mb-4">在其他裝置輸入行程代碼，即可同步編輯。</p>
+                    
+                    <div v-if="isMissingApiKey" class="mb-4 p-3 bg-amber-50 rounded-xl border border-amber-100 flex items-start gap-2">
+                        <i class="ph-fill ph-warning-circle text-amber-500 mt-0.5 text-lg"></i>
+                        <p class="text-[13px] text-amber-800 leading-relaxed">
+                            <strong>離線模式：</strong>您尚未在原始碼填寫專屬的 <code>Firebase API Key</code>。目前所有資料都會安全地儲存在這台裝置的本機端，不會遺失。
+                        </p>
+                    </div>
+                    <p v-else class="text-xs text-gray-500 mb-4">在其他裝置輸入行程代碼，即可同步編輯。</p>
+                    
                     <div class="ios-card p-4 mb-4">
                         <span class="text-xs text-gray-500 block mb-2">當前行程代碼</span>
                         <div class="flex gap-2">
@@ -548,6 +556,7 @@
                     copyBtnText: '複製',
                     isRemoteUpdate: false,
                     unsubscribeCloud: null,
+                    isMissingApiKey: false,
 
                     showAddRestaurantModal: false,
                     showAddItineraryModal: false,
@@ -759,7 +768,7 @@
                     try {
                         // 提醒：請替換為您自己的 Firebase Config 才能正常運作雲端同步
                         const firebaseConfig = {
-                            apiKey: "YOUR_API_KEY",
+                            apiKey: "AIzaSyC4ByY5EGPXsakZ5V_p7WbsWnLFhmDMxrg",
                             authDomain: "seoul-0429.firebaseapp.com",
                             projectId: "seoul-0429",
                             storageBucket: "seoul-0429.firebasestorage.app",
@@ -771,6 +780,7 @@
 
                         if (firebaseConfig.apiKey === "YOUR_API_KEY") {
                             this.syncStatus = 'offline';
+                            this.isMissingApiKey = true;
                             return;
                         }
 
