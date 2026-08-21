@@ -882,15 +882,20 @@
                         this.syncStatus = 'saving';
                         const { doc, setDoc } = window.FirebaseSDK;
                         const tripDocRef = doc(this.db, 'artifacts', this.appId, 'public', 'data', 'trips', this.tripCode);
-                        await setDoc(tripDocRef, {
+                        
+                        // 去除 Vue Proxy 封裝，避免 Firebase SDK 拋出自訂物件錯誤而導致本地端回溯（無故消失）
+                        const rawData = JSON.parse(JSON.stringify({
                             prepList: this.prepList,
                             itinerary: this.itinerary,
                             shoppingList: this.shoppingList,
-                            foodList: this.foodList,
-                            updatedAt: Date.now()
-                        }, { merge: true });
+                            foodList: this.foodList
+                        }));
+                        rawData.updatedAt = Date.now();
+
+                        await setDoc(tripDocRef, rawData, { merge: true });
                         this.syncStatus = 'synced';
                     } catch (e) {
+                        console.error('Cloud Sync Error:', e);
                         this.syncStatus = 'error';
                     }
                 },
@@ -1114,16 +1119,22 @@
                 // 新增：加入商品時紀錄當下選擇的分類
                 addShopping() { 
                     if(this.newItem.trim() || this.newItemImage) { 
+                        const cat = this.newItemCategory;
                         this.shoppingList.unshift({ 
                             id: this.generateId(), 
                             text: this.newItem.trim() || '未命名商品', 
                             done: false,
                             image: this.newItemImage,
-                            category: this.newItemCategory
+                            category: cat
                         }); 
                         this.newItem = ''; 
                         this.newItemImage = null;
                         if(this.$refs.fileInput) this.$refs.fileInput.value = '';
+                        
+                        // 如果當前過濾器不是「全部」且不同於新商品分類，自動切換過濾器以確保新商品能顯示
+                        if (this.shoppingFilter !== '全部' && this.shoppingFilter !== cat) {
+                            this.shoppingFilter = cat;
+                        }
                     } 
                 },
                 onImageSelected(e) {
