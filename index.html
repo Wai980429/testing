@@ -301,22 +301,32 @@
             </section>
 
             <!-- ＝＝＝＝＝ 購物 (圖片主導網格佈局) ＝＝＝＝＝ -->
-            <section v-show="currentTab === '購物'" class="space-y-4 pt-2">
+            <section v-show="currentTab === '購物'" class="space-y-4 pt-2 pb-28"> <!-- 增加底部內邊距避免被懸浮列遮擋 -->
+                
+                <!-- 新增：購物頂部分類標籤 -->
+                <div class="grid grid-cols-4 w-full gap-2 mb-2">
+                    <button v-for="cat in shoppingCategories" :key="cat" @click="shoppingFilter = cat"
+                        :class="['py-2.5 rounded-xl font-bold text-[13px] transition-all flex items-center justify-center', 
+                        shoppingFilter === cat ? 'bg-gray-900 text-white shadow-md' : 'bg-white text-gray-600 shadow-sm border border-gray-200/50']">
+                        {{ cat }}
+                    </button>
+                </div>
+
                 <div class="ios-card p-5">
                     <div class="flex justify-between items-center mb-5">
                         <h3 class="text-lg font-bold text-gray-900">購物清單</h3>
                         <progress-ring :percentage="shoppingProgress" :size="38" :stroke="3.5" color="stroke-indigo-500"></progress-ring>
                     </div>
                     
-                    <p v-if="shoppingList.length === 0" class="text-center text-sm text-gray-400 py-6 bg-gray-50 rounded-xl mb-4 border border-dashed border-gray-200">尚無購物目標</p>
+                    <p v-if="filteredShoppingList.length === 0" class="text-center text-sm text-gray-400 py-6 bg-gray-50 rounded-xl mb-4 border border-dashed border-gray-200">尚無購物目標</p>
 
-                    <!-- 圖片方塊 Grid 佈局 -->
-                    <div ref="shoppingListRef" class="grid grid-cols-2 gap-3 min-h-[150px]">
-                        <div v-for="(item, idx) in shoppingList" :key="item.id" 
+                    <!-- 圖片方塊 Grid 佈局 (移除了拖曳類別) -->
+                    <div class="grid grid-cols-2 gap-3 min-h-[150px]">
+                        <div v-for="item in filteredShoppingList" :key="item.id" 
                              class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden relative group flex flex-col">
                             
                             <!-- 獨立的刪除按鈕 (右上角) -->
-                            <button @click="removeTask(shoppingList, idx)" class="absolute top-2 right-2 w-7 h-7 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-red-500 shadow-sm z-10 active:scale-90 transition-transform">
+                            <button @click="removeShoppingItem(item.id)" class="absolute top-2 right-2 w-7 h-7 bg-white/80 backdrop-blur-md rounded-full flex items-center justify-center text-red-500 shadow-sm z-10 active:scale-90 transition-transform">
                                 <i class="ph-bold ph-x text-sm"></i>
                             </button>
 
@@ -329,32 +339,52 @@
                             </div>
 
                             <!-- 文字與打卡區塊 (方塊下半部) -->
-                            <div class="p-3 flex items-start gap-2 bg-white flex-1 drag-handle touch-none cursor-grab">
-                                <input type="checkbox" v-model="item.done" class="mt-0.5 flex-shrink-0">
-                                <span :class="{'text-gray-400 line-through': item.done, 'text-gray-800': !item.done}" class="text-[13px] leading-tight font-medium break-all">
-                                    {{ item.text }}
-                                </span>
+                            <div class="p-3 flex flex-col items-start gap-1 bg-white flex-1">
+                                <div class="flex items-start gap-2 w-full">
+                                    <input type="checkbox" v-model="item.done" class="mt-0.5 flex-shrink-0">
+                                    <span :class="{'text-gray-400 line-through': item.done, 'text-gray-800': !item.done}" class="text-[13px] leading-tight font-medium break-all">
+                                        {{ item.text }}
+                                    </span>
+                                </div>
+                                <!-- 顯示分類標籤以利辨識 -->
+                                <span class="text-[10px] text-gray-400 font-semibold ml-7 tracking-wide">{{ item.category || '其他' }}</span>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- 新增購物區塊 -->
-                    <div class="mt-5 pt-5 border-t border-gray-100 flex flex-col gap-3">
-                        <div v-if="newItemImage" class="relative w-max ml-12">
-                            <img :src="newItemImage" class="h-20 w-20 object-cover rounded-xl border border-gray-200 shadow-sm">
-                            <button @click="newItemImage = null; $refs.fileInput.value = ''" class="absolute -top-2 -right-2 bg-gray-800/80 backdrop-blur text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] shadow-md">✕</button>
-                        </div>
-                        
-                        <div class="flex gap-2">
-                            <input type="file" ref="fileInput" accept="image/*" class="hidden" @change="onImageSelected">
-                            <button @click="$refs.fileInput.click()" class="bg-[#F2F2F7] text-[#007AFF] p-2.5 rounded-xl font-bold active:bg-blue-100 transition-colors flex-shrink-0">
-                                <i class="ph-bold ph-image text-xl"></i>
-                            </button>
-                            <input v-model="newItem" @keyup.enter="addShopping" placeholder="添加新商品名稱..." 
-                                   class="flex-1 bg-[#F2F2F7] px-4 py-2.5 rounded-xl text-[15px] focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all">
-                            <button @click="addShopping" class="bg-gray-900 text-white p-2.5 rounded-xl font-bold shadow-sm active:bg-gray-700 transition-colors flex-shrink-0">
-                                <i class="ph-bold ph-plus text-xl"></i>
-                            </button>
+                </div>
+
+                <!-- 懸浮固定新增列 (只在購物分頁顯示) -->
+                <div class="fixed bottom-[calc(env(safe-area-inset-bottom)+72px)] left-0 w-full px-4 z-40 pointer-events-none transition-all duration-300">
+                    <div class="max-w-md mx-auto pointer-events-auto">
+                        <div class="glass-header p-3 rounded-2xl shadow-xl border border-gray-200/60 flex flex-col gap-2">
+                            <div v-if="newItemImage" class="relative w-max ml-12">
+                                <img :src="newItemImage" class="h-16 w-16 object-cover rounded-xl border border-gray-200 shadow-sm">
+                                <button @click="newItemImage = null; $refs.fileInput.value = ''" class="absolute -top-2 -right-2 bg-gray-800/80 backdrop-blur text-white rounded-full w-6 h-6 flex items-center justify-center text-[10px] shadow-md">✕</button>
+                            </div>
+                            
+                            <div class="flex gap-2 items-center">
+                                <input type="file" ref="fileInput" accept="image/*" class="hidden" @change="onImageSelected">
+                                <button @click="$refs.fileInput.click()" class="bg-white/80 text-[#007AFF] border border-gray-200/50 p-2.5 rounded-xl font-bold shadow-sm active:bg-blue-50 transition-colors flex-shrink-0 flex items-center justify-center h-[44px] w-[44px]">
+                                    <i class="ph-bold ph-image text-xl"></i>
+                                </button>
+
+                                <!-- 新增：分類選擇下拉按鈕 -->
+                                <div class="relative flex-shrink-0 h-[44px]">
+                                    <select v-model="newItemCategory" class="appearance-none bg-white/80 border border-gray-200/50 text-gray-700 h-full py-0 pl-3 pr-7 rounded-xl text-[14px] font-bold focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 shadow-sm">
+                                        <option value="食物">食物</option>
+                                        <option value="美妝">美妝</option>
+                                        <option value="其他">其他</option>
+                                    </select>
+                                    <i class="ph-bold ph-caret-down absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none"></i>
+                                </div>
+
+                                <input v-model="newItem" @keyup.enter="addShopping" placeholder="添加新商品..." 
+                                       class="flex-1 bg-white/80 border border-gray-200/50 px-3 py-0 h-[44px] rounded-xl text-[15px] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 transition-all min-w-0">
+                                
+                                <button @click="addShopping" class="bg-gray-900 text-white p-2.5 rounded-xl font-bold shadow-sm active:bg-gray-700 transition-colors flex-shrink-0 flex items-center justify-center h-[44px] w-[44px]">
+                                    <i class="ph-bold ph-plus text-xl"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -407,7 +437,6 @@
                     
                     <div class="space-y-4">
                         <div class="ios-card overflow-hidden divide-y divide-gray-100">
-                            <!-- [新設計] 明顯的時間選擇器 -->
                             <div class="flex items-center justify-between px-4 py-3.5 bg-white">
                                 <div class="flex items-center gap-2">
                                     <i class="ph-fill ph-clock text-xl text-[#007AFF]"></i>
@@ -529,8 +558,7 @@
         </transition>
 
         <!-- ＝＝＝＝＝ 底部導覽列 ＝＝＝＝＝ -->
-        <!-- [設計修改] 使用 calc 與 safe-area 變數墊高導航列，並加入 padding 避免最下方被遮住 -->
-        <nav class="fixed bottom-0 left-0 w-full glass-nav border-t border-gray-200/50 z-40" style="padding-bottom: calc(env(safe-area-inset-bottom) + 12px);">
+        <nav class="fixed bottom-0 left-0 w-full glass-nav border-t border-gray-200/50 z-50" style="padding-bottom: calc(env(safe-area-inset-bottom) + 12px);">
             <div class="flex justify-around px-2 pt-2 max-w-md mx-auto">
                 <button v-for="tab in tabs" :key="tab.name"
                     @click="currentTab = tab.name" 
@@ -566,8 +594,14 @@
                     selectedDay: 'Day 1',
                     
                     newPrepItem: '',
+                    
+                    // --- 新增：購物分類狀態 ---
+                    shoppingFilter: '全部',
+                    shoppingCategories: ['全部', '食物', '美妝', '其他'],
+                    newItemCategory: '其他', // 新增商品預設分類
                     newItem: '',
                     newItemImage: null,
+                    
                     fullscreenImage: null,
                     
                     newTask: { id: '', time: '10:00', text: '', url: '', transitToNext: '' },
@@ -602,7 +636,7 @@
                     itinerary: { 'Day 1': [], 'Day 2': [], 'Day 3': [], 'Day 4': [], 'Day 5': [] },
                     shoppingList: [],
                     
-                    // 導入完整 72 家首爾餐廳名單
+                    // 導入完整首爾餐廳名單
                     foodList: [
                         { id: 'f1', name: '1.5floor coffee', type: '甜品', area: '弘大', url: 'https://www.google.com/maps/place/1.5floor+coffee/data=!4m2!3m1!1s0x357c98e911840279:0x4447e4da1b23947c', rating: 5 },
                         { id: 'f2', name: '陳玉華奶奶元祖一隻雞', type: '蔘雞湯', area: '明洞', url: 'https://www.google.com/maps/place/%E9%99%B3%E7%8E%89%E8%8F%AF%E5%A5%B6%E5%A5%B6%E5%85%83%E7%A5%96%E4%B8%80%E9%9A%BB%E9%9B%9E', rating: 5 },
@@ -706,6 +740,17 @@
                     const done = this.shoppingList.filter(i => i.done).length;
                     return (done / this.shoppingList.length) * 100;
                 },
+                
+                // 新增：購物過濾邏輯
+                filteredShoppingList() {
+                    if (!this.shoppingList) return [];
+                    if (this.shoppingFilter === '全部') return this.shoppingList;
+                    return this.shoppingList.filter(item => {
+                        const cat = item.category || '其他';
+                        return cat === this.shoppingFilter;
+                    });
+                },
+
                 availableAreas() {
                     if (!Array.isArray(this.foodList)) return [];
                     const areas = new Set(this.foodList.map(item => item.area).filter(Boolean));
@@ -726,11 +771,20 @@
                 }
             },
             watch: {
-                // [新增] 當切換分頁時，將畫面平滑滾動至最上方
                 currentTab() { 
                     this.initSortable(); 
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
+                
+                // 新增：當切換頂部分類時，自動連動懸浮列中的分類預設值
+                shoppingFilter(newVal) {
+                    if (newVal !== '全部') {
+                        this.newItemCategory = newVal;
+                    } else {
+                        this.newItemCategory = '其他';
+                    }
+                },
+
                 selectedDay() { this.initSortable(); },
                 prepList: { handler() { this.handleDataChange(); }, deep: true },
                 itinerary: { handler() { this.handleDataChange(); }, deep: true },
@@ -766,7 +820,6 @@
                     const { initializeApp, getAuth, signInAnonymously, getFirestore, doc, setDoc, onSnapshot } = window.FirebaseSDK;
 
                     try {
-                        // 提醒：請替換為您自己的 Firebase Config 才能正常運作雲端同步
                         const firebaseConfig = {
                             apiKey: "AIzaSyC4ByY5EGPXsakZ5V_p7WbsWnLFhmDMxrg",
                             authDomain: "seoul-0429.firebaseapp.com",
@@ -927,7 +980,6 @@
                     }
                 },
 
-                // --- 時間數學轉換 Helper ---
                 timeToMins(t) {
                     if(!t) return 0;
                     let [h, m] = t.split(':').map(Number);
@@ -987,15 +1039,7 @@
                             }));
                         }
                         
-                        // 購物網格拖曳
-                        if (this.$refs.shoppingListRef && this.currentTab === '購物') {
-                            this.sortableInstances.push(new Sortable(this.$refs.shoppingListRef, { ...opts,
-                                onEnd: (evt) => {
-                                    const item = this.shoppingList.splice(evt.oldIndex, 1)[0];
-                                    this.shoppingList.splice(evt.newIndex, 0, item);
-                                }
-                            }));
-                        }
+                        // [移除] 已經移除購物清單的 Drag & Drop 邏輯
                     });
                 },
 
@@ -1027,7 +1071,6 @@
                 },
                 openAddModal() {
                     this.isEditingTask = false;
-                    // 自動填入最後一筆行程的時間+30分，若無則填 10:00
                     let defaultTime = '10:00';
                     const currList = this.itinerary[this.selectedDay];
                     if (currList.length > 0) {
@@ -1067,13 +1110,16 @@
                         this.newPrepItem = '';
                     }
                 },
+                
+                // 新增：加入商品時紀錄當下選擇的分類
                 addShopping() { 
                     if(this.newItem.trim() || this.newItemImage) { 
                         this.shoppingList.unshift({ 
                             id: this.generateId(), 
                             text: this.newItem.trim() || '未命名商品', 
                             done: false,
-                            image: this.newItemImage 
+                            image: this.newItemImage,
+                            category: this.newItemCategory
                         }); 
                         this.newItem = ''; 
                         this.newItemImage = null;
@@ -1093,6 +1139,13 @@
 
                 removeTask(list, index) { list.splice(index, 1); },
                 removePrepItem(index) { this.prepList.splice(index, 1); },
+                
+                // 新增：特定用於購物清單刪除，因加入過濾器後傳入 index 會不準確
+                removeShoppingItem(id) {
+                    const index = this.shoppingList.findIndex(item => item.id === id);
+                    if (index !== -1) this.shoppingList.splice(index, 1);
+                },
+
                 removeRestaurant(id) { 
                     if (Array.isArray(this.foodList)) {
                         const index = this.foodList.findIndex(item => item.id === id);
