@@ -577,6 +577,7 @@
         const app = createApp({
             data() {
                 return {
+                    saveTimeout: null,
                     showSyncModal: false,
                     tripCode: localStorage.getItem('appleTravel_tripCode') || 'SEOUL-' + Math.floor(1000 + Math.random() * 9000),
                     inputTripCode: '',
@@ -852,8 +853,15 @@
                         if (this.unsubscribeCloud) this.unsubscribeCloud();
                         const tripDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'trips', this.tripCode);
 
-                        this.unsubscribeCloud = onSnapshot(tripDocRef, (snapshot) => {
+                        // 加上 { includeMetadataChanges: true } 監聽包含本地端的寫入狀態
+                        this.unsubscribeCloud = onSnapshot(tripDocRef, { includeMetadataChanges: true }, (snapshot) => {
                             if (snapshot.exists()) {
+                                // 核心修復：如果是我們自己本地端尚未完成同步的寫入，直接忽略。
+                                // 這能避免 Firebase 將本地過渡狀態覆蓋回畫面，造成新增物品瞬間消失或閃爍
+                                if (snapshot.metadata.hasPendingWrites) {
+                                    return;
+                                }
+                                
                                 const data = snapshot.data();
                                 this.isRemoteUpdate = true;
                                 if (data.prepList) this.prepList = data.prepList;
@@ -874,7 +882,15 @@
                 },
                 handleDataChange() {
                     this.saveData(); 
-                    if (!this.isRemoteUpdate) this.saveToCloud();
+                    if (!this.isRemoteUpdate) {
+                        // 核心修復：加入防抖 (Debounce) 機制
+                        // 防止連續快速新增物品導致瞬間發出多個寫入請求而互相干擾
+                        if (this.saveTimeout) clearTimeout(this.saveTimeout);
+                        this.syncStatus = 'saving';
+                        this.saveTimeout = setTimeout(() => {
+                            this.saveToCloud();
+                        }, 800);
+                    }
                 },
                 async saveToCloud() {
                     if (!this.db || !this.appId || !this.tripCode) return;
@@ -1149,8 +1165,9 @@
                             let width = img.width;
                             let height = img.height;
                             
-                            // 設定最大寬高限制 (800px)，按比例縮小
-                            const MAX_SIZE = 800;
+                            // 核心修復：設定更嚴格的最大寬高限制 (300px)，確保圖片極小化
+                            // 避免因多張圖片累積超過 Firestore 1MB 單文檔上限，導致寫入失敗而引發資料強制回溯(消失)
+                            const MAX_SIZE = 300;
                             if (width > height) {
                                 if (width > MAX_SIZE) {
                                     height *= MAX_SIZE / width;
@@ -1168,8 +1185,8 @@
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
                             
-                            // 壓縮為 JPEG，品質設為 0.6 (大幅縮減檔案大小至約 50KB 左右)
-                            this.newItemImage = canvas.toDataURL('image/jpeg', 0.6);
+                            // 壓縮為 JPEG，品質設為 0.4 (大幅縮減檔案大小)
+                            this.newItemImage = canvas.toDataURL('image/jpeg', 0.4);
                         };
                         img.src = event.target.result;
                     };
