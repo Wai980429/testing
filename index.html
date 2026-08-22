@@ -301,9 +301,9 @@
             </section>
 
             <!-- ＝＝＝＝＝ 購物 (圖片主導網格佈局) ＝＝＝＝＝ -->
-            <section v-show="currentTab === '購物'" class="space-y-4 pt-2 pb-28"> <!-- 增加底部內邊距避免被懸浮列遮擋 -->
+            <section v-show="currentTab === '購物'" class="space-y-4 pt-2 pb-28"> 
                 
-                <!-- 新增：購物頂部分類標籤 -->
+                <!-- 購物頂部分類標籤 -->
                 <div class="grid grid-cols-4 w-full gap-2 mb-2">
                     <button v-for="cat in shoppingCategories" :key="cat" @click="shoppingFilter = cat"
                         :class="['py-2.5 rounded-xl font-bold text-[13px] transition-all flex items-center justify-center', 
@@ -320,7 +320,7 @@
                     
                     <p v-if="filteredShoppingList.length === 0" class="text-center text-sm text-gray-400 py-6 bg-gray-50 rounded-xl mb-4 border border-dashed border-gray-200">尚無購物目標</p>
 
-                    <!-- 圖片方塊 Grid 佈局 (移除了拖曳類別) -->
+                    <!-- 圖片方塊 Grid 佈局 -->
                     <div class="grid grid-cols-2 gap-3 min-h-[150px]">
                         <div v-for="item in filteredShoppingList" :key="item.id" 
                              class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden relative group flex flex-col">
@@ -368,7 +368,6 @@
                                     <i class="ph-bold ph-image text-xl"></i>
                                 </button>
 
-                                <!-- 新增：分類選擇下拉按鈕 -->
                                 <div class="relative flex-shrink-0 h-[44px]">
                                     <select v-model="newItemCategory" class="appearance-none bg-white/80 border border-gray-200/50 text-gray-700 h-full py-0 pl-3 pr-7 rounded-xl text-[14px] font-bold focus:outline-none focus:ring-2 focus:ring-[#007AFF]/30 shadow-sm">
                                         <option value="食物">食物</option>
@@ -400,7 +399,6 @@
                     
                     <swipe-item v-for="place in filteredFoodList" :key="place.id" @delete="removeRestaurant(place.id)" class="ios-card border border-gray-50">
                         <div class="p-4 flex gap-4 items-center">
-                            <!-- 統一風格圖示 -->
                             <div class="w-12 h-12 bg-blue-50/50 rounded-xl flex items-center justify-center text-2xl text-[#007AFF] flex-shrink-0 cursor-pointer border border-blue-100/50" v-html="getFoodIcon(place.type)" @click="openEditRestaurantModal(place)">
                             </div>
                             
@@ -424,10 +422,11 @@
         </main>
 
         <!-- ＝＝＝＝＝ Modals (新增/編輯行程表單) ＝＝＝＝＝ -->
+        <!-- 注意：此處已修改 z-index 為 z-[60] 以及安全區域 pb-[calc(env(safe-area-inset-bottom)+24px)] -->
         <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-full" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-full">
-            <div v-if="showAddItineraryModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
+            <div v-if="showAddItineraryModal" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4">
                 <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" @click="closeModals"></div>
-                <div class="relative bg-[#F2F2F7] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden pb-10 sm:pb-5 max-h-[90vh] overflow-y-auto">
+                <div class="relative bg-[#F2F2F7] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden pb-[calc(env(safe-area-inset-bottom)+24px)] sm:pb-5 max-h-[90vh] overflow-y-auto">
                     <div class="w-10 h-1.5 bg-gray-300 rounded-full mx-auto mb-5 sm:hidden"></div>
                     
                     <div class="flex justify-between items-center mb-6">
@@ -461,9 +460,9 @@
 
         <!-- ＝＝＝＝＝ Modals (新增/編輯餐廳) ＝＝＝＝＝ -->
         <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-full" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-full">
-            <div v-if="showAddRestaurantModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
+            <div v-if="showAddRestaurantModal" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4">
                 <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeModals"></div>
-                <div class="relative bg-[#F2F2F7] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden pb-10 sm:pb-5">
+                <div class="relative bg-[#F2F2F7] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden pb-[calc(env(safe-area-inset-bottom)+24px)] sm:pb-5">
                     <div class="w-10 h-1.5 bg-gray-300 rounded-full mx-auto mb-5 sm:hidden"></div>
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xl font-bold text-gray-900">{{ isEditingRestaurant ? '編輯餐廳' : '手動新增餐廳' }}</h3>
@@ -515,9 +514,9 @@
 
         <!-- ＝＝＝＝＝ 雲端同步 Modal ＝＝＝＝＝ -->
         <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 translate-y-full" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 translate-y-full">
-            <div v-if="showSyncModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
+            <div v-if="showSyncModal" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4">
                 <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showSyncModal = false"></div>
-                <div class="relative bg-[#F2F2F7] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden pb-10 sm:pb-5">
+                <div class="relative bg-[#F2F2F7] w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl overflow-hidden pb-[calc(env(safe-area-inset-bottom)+24px)] sm:pb-5">
                     <div class="flex justify-between items-center mb-4">
                         <div class="flex items-center gap-2">
                             <i class="ph-fill ph-cloud-arrow-up text-2xl text-[#007AFF]"></i>
@@ -551,13 +550,14 @@
 
         <!-- 全螢幕圖片放大 Modal -->
         <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
-            <div v-if="fullscreenImage" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm" @click="fullscreenImage = null">
-                <button class="absolute top-16 right-6 w-10 h-10 bg-white/20 text-white rounded-full flex items-center justify-center font-bold text-xl z-[70] backdrop-blur-md">✕</button>
+            <div v-if="fullscreenImage" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/95 p-4 backdrop-blur-sm" @click="fullscreenImage = null">
+                <button class="absolute top-16 right-6 w-10 h-10 bg-white/20 text-white rounded-full flex items-center justify-center font-bold text-xl z-[80] backdrop-blur-md">✕</button>
                 <img :src="fullscreenImage" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" @click.stop>
             </div>
         </transition>
 
         <!-- ＝＝＝＝＝ 底部導覽列 ＝＝＝＝＝ -->
+        <!-- Navigation z-index is 50, so Modals (z-60) will correctly appear on top of it -->
         <nav class="fixed bottom-0 left-0 w-full glass-nav border-t border-gray-200/50 z-50" style="padding-bottom: calc(env(safe-area-inset-bottom) + 12px);">
             <div class="flex justify-around px-2 pt-2 max-w-md mx-auto">
                 <button v-for="tab in tabs" :key="tab.name"
@@ -578,6 +578,7 @@
             data() {
                 return {
                     saveTimeout: null,
+                    isSavingDebounced: false, // 新增：用於判斷是否正在防抖準備寫入
                     showSyncModal: false,
                     tripCode: localStorage.getItem('appleTravel_tripCode') || 'SEOUL-' + Math.floor(1000 + Math.random() * 9000),
                     inputTripCode: '',
@@ -596,10 +597,9 @@
                     
                     newPrepItem: '',
                     
-                    // --- 新增：購物分類狀態 ---
                     shoppingFilter: '全部',
                     shoppingCategories: ['全部', '食物', '美妝', '其他'],
-                    newItemCategory: '其他', // 新增商品預設分類
+                    newItemCategory: '其他', 
                     newItem: '',
                     newItemImage: null,
                     
@@ -742,7 +742,6 @@
                     return (done / this.shoppingList.length) * 100;
                 },
                 
-                // 新增：購物過濾邏輯
                 filteredShoppingList() {
                     if (!this.shoppingList) return [];
                     if (this.shoppingFilter === '全部') return this.shoppingList;
@@ -776,8 +775,6 @@
                     this.initSortable(); 
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 },
-                
-                // 新增：當切換頂部分類時，自動連動懸浮列中的分類預設值
                 shoppingFilter(newVal) {
                     if (newVal !== '全部') {
                         this.newItemCategory = newVal;
@@ -785,7 +782,6 @@
                         this.newItemCategory = '其他';
                     }
                 },
-
                 selectedDay() { this.initSortable(); },
                 prepList: { handler() { this.handleDataChange(); }, deep: true },
                 itinerary: { handler() { this.handleDataChange(); }, deep: true },
@@ -853,12 +849,12 @@
                         if (this.unsubscribeCloud) this.unsubscribeCloud();
                         const tripDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'trips', this.tripCode);
 
-                        // 加上 { includeMetadataChanges: true } 監聽包含本地端的寫入狀態
                         this.unsubscribeCloud = onSnapshot(tripDocRef, { includeMetadataChanges: true }, (snapshot) => {
                             if (snapshot.exists()) {
-                                // 核心修復：如果是我們自己本地端尚未完成同步的寫入，直接忽略。
-                                // 這能避免 Firebase 將本地過渡狀態覆蓋回畫面，造成新增物品瞬間消失或閃爍
-                                if (snapshot.metadata.hasPendingWrites) {
+                                // 核心修復：防止本地資料在新增時遭到 Firebase Snapshot 的競爭狀態抹除！
+                                // 只要我們剛寫了資料（isSavingDebounced = true）或是 SDK 還在處理我們的寫入（hasPendingWrites），
+                                // 就不應該套用伺服器 Snapshot 狀態覆蓋畫面，因為伺服器端資料可能尚未包含最新修改。
+                                if (this.isSavingDebounced || snapshot.metadata.hasPendingWrites) {
                                     return;
                                 }
                                 
@@ -883,12 +879,15 @@
                 handleDataChange() {
                     this.saveData(); 
                     if (!this.isRemoteUpdate) {
-                        // 核心修復：加入防抖 (Debounce) 機制
-                        // 防止連續快速新增物品導致瞬間發出多個寫入請求而互相干擾
+                        // 核心修復：加入防抖 (Debounce) 機制，並設立 isSavingDebounced 防護標記
                         if (this.saveTimeout) clearTimeout(this.saveTimeout);
+                        
+                        this.isSavingDebounced = true; // 開啟防護
                         this.syncStatus = 'saving';
+                        
                         this.saveTimeout = setTimeout(() => {
                             this.saveToCloud();
+                            this.isSavingDebounced = false; // 取消防護 (開始由 hasPendingWrites 接管防護)
                         }, 800);
                     }
                 },
@@ -899,7 +898,6 @@
                         const { doc, setDoc } = window.FirebaseSDK;
                         const tripDocRef = doc(this.db, 'artifacts', this.appId, 'public', 'data', 'trips', this.tripCode);
                         
-                        // 去除 Vue Proxy 封裝，避免 Firebase SDK 拋出自訂物件錯誤而導致本地端回溯（無故消失）
                         const rawData = JSON.parse(JSON.stringify({
                             prepList: this.prepList,
                             itinerary: this.itinerary,
@@ -913,6 +911,10 @@
                     } catch (e) {
                         console.error('Cloud Sync Error:', e);
                         this.syncStatus = 'error';
+                        // 處理 Firebase 1MB 超量異常，給予使用者明確提示，防止默默出錯
+                        if (e.message && e.message.includes('longer than')) {
+                            alert('⚠️ 同步失敗：購物清單圖片資料量過大。請刪除部分不需要的物品重新嘗試。');
+                        }
                     }
                 },
                 copyTripCode() {
@@ -1019,7 +1021,6 @@
                     this.$nextTick(() => {
                         const opts = { handle: '.drag-handle', animation: 250, ghostClass: 'opacity-50' };
                         
-                        // 行程表 (加入時間自動計算邏輯)
                         if (this.$refs.itineraryList && this.currentTab === '行程表') {
                             this.sortableInstances.push(new Sortable(this.$refs.itineraryList, { ...opts,
                                 onEnd: (evt) => {
@@ -1027,7 +1028,6 @@
                                     const item = list.splice(evt.oldIndex, 1)[0];
                                     list.splice(evt.newIndex, 0, item);
                                     
-                                    // 自動分配拖曳後的時間
                                     const prevItem = list[evt.newIndex - 1];
                                     const nextItem = list[evt.newIndex + 1];
 
@@ -1040,17 +1040,16 @@
                                             item.time = prevItem.time;
                                         }
                                     } else if (prevItem && prevItem.time) {
-                                        let t = this.timeToMins(prevItem.time) + 30; // 下移自動加30分
+                                        let t = this.timeToMins(prevItem.time) + 30; 
                                         item.time = this.minsToTime(t >= 1440 ? 1439 : t);
                                     } else if (nextItem && nextItem.time) {
-                                        let t = this.timeToMins(nextItem.time) - 30; // 上移自動扣30分
+                                        let t = this.timeToMins(nextItem.time) - 30; 
                                         item.time = this.minsToTime(t < 0 ? 0 : t);
                                     }
                                 }
                             }));
                         }
                         
-                        // 資訊清單 (無更改)
                         if (this.$refs.prepListRef && this.currentTab === '資訊') {
                             this.sortableInstances.push(new Sortable(this.$refs.prepListRef, { ...opts,
                                 onEnd: (evt) => {
@@ -1059,8 +1058,6 @@
                                 }
                             }));
                         }
-                        
-                        // [移除] 已經移除購物清單的 Drag & Drop 邏輯
                     });
                 },
 
@@ -1072,7 +1069,6 @@
                             if (parsed.prepList) this.prepList = parsed.prepList;
                             if (parsed.itinerary) this.itinerary = parsed.itinerary;
                             if (parsed.shoppingList) this.shoppingList = parsed.shoppingList;
-                            // 如果本地有保存新的餐廳，覆蓋掉預設名單
                             if (parsed.foodList && parsed.foodList.length > 0) this.foodList = parsed.foodList;
                         } catch(e) {}
                     }
@@ -1132,7 +1128,6 @@
                     }
                 },
                 
-                // 新增：加入商品時紀錄當下選擇的分類
                 addShopping() { 
                     if(this.newItem.trim() || this.newItemImage) { 
                         const cat = this.newItemCategory;
@@ -1147,7 +1142,6 @@
                         this.newItemImage = null;
                         if(this.$refs.fileInput) this.$refs.fileInput.value = '';
                         
-                        // 如果當前過濾器不是「全部」且不同於新商品分類，自動切換過濾器以確保新商品能顯示
                         if (this.shoppingFilter !== '全部' && this.shoppingFilter !== cat) {
                             this.shoppingFilter = cat;
                         }
@@ -1165,9 +1159,10 @@
                             let width = img.width;
                             let height = img.height;
                             
-                            // 核心修復：設定更嚴格的最大寬高限制 (300px)，確保圖片極小化
-                            // 避免因多張圖片累積超過 Firestore 1MB 單文檔上限，導致寫入失敗而引發資料強制回溯(消失)
-                            const MAX_SIZE = 300;
+                            // 核心修復：為了確保不會因為大量圖片導致 Firebase 1MB 超標 (資料遺失)
+                            // 限制解析度為更小的 150px 縮圖大小 (原本 300px)，且品質從 0.4 降至 0.3
+                            // 因為在手機畫面上這只是一個小正方形的預覽縮圖，此壓縮量能確保容量極端安全。
+                            const MAX_SIZE = 150;
                             if (width > height) {
                                 if (width > MAX_SIZE) {
                                     height *= MAX_SIZE / width;
@@ -1185,8 +1180,7 @@
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
                             
-                            // 壓縮為 JPEG，品質設為 0.4 (大幅縮減檔案大小)
-                            this.newItemImage = canvas.toDataURL('image/jpeg', 0.4);
+                            this.newItemImage = canvas.toDataURL('image/jpeg', 0.3);
                         };
                         img.src = event.target.result;
                     };
@@ -1199,7 +1193,6 @@
                 removeTask(list, index) { list.splice(index, 1); },
                 removePrepItem(index) { this.prepList.splice(index, 1); },
                 
-                // 新增：特定用於購物清單刪除，因加入過濾器後傳入 index 會不準確
                 removeShoppingItem(id) {
                     const index = this.shoppingList.findIndex(item => item.id === id);
                     if (index !== -1) this.shoppingList.splice(index, 1);
