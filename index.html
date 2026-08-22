@@ -1159,10 +1159,8 @@
                             let width = img.width;
                             let height = img.height;
                             
-                            // 核心修復：為了確保不會因為大量圖片導致 Firebase 1MB 超標 (資料遺失)
-                            // 限制解析度為更小的 150px 縮圖大小 (原本 300px)，且品質從 0.4 降至 0.3
-                            // 因為在手機畫面上這只是一個小正方形的預覽縮圖，此壓縮量能確保容量極端安全。
-                            const MAX_SIZE = 150;
+                            // 提升解析度至 400px，確保縮圖及放大檢視的清晰度，同時兼顧 Firebase 容量限制
+                            const MAX_SIZE = 400;
                             if (width > height) {
                                 if (width > MAX_SIZE) {
                                     height *= MAX_SIZE / width;
@@ -1180,7 +1178,8 @@
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, width, height);
                             
-                            this.newItemImage = canvas.toDataURL('image/jpeg', 0.3);
+                            // 將品質提升至 0.6 (原本 0.3)
+                            this.newItemImage = canvas.toDataURL('image/jpeg', 0.6);
                         };
                         img.src = event.target.result;
                     };
